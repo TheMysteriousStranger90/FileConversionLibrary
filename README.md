@@ -1,6 +1,3 @@
-# FileConversionLibrary
-FileConversionLibrary
-
 # File Conversion Library
 
 This library provides functionality to convert CSV files to XML and vice versa.
