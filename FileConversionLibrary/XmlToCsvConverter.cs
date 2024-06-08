@@ -5,7 +5,7 @@ namespace FileConversionLibrary;
 
 public class XmlToCsvConverter
 {
-    public void Convert(string xmlFilePath, string csvOutputPath)
+    public void ConvertXmlToCsv(string xmlFilePath, string csvOutputPath)
     {
         try
         {

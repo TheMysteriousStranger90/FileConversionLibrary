@@ -1,7 +1,4 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=0b5c5e8b_002Deb72_002D408d_002Dbbe9_002Db7e4b8a2295f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="CsvToXmlConverterTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::AD889C7E-9909-4DF4-82F0-F6741B16F043::net7.0::FileConversionLibrary.Tests.CsvToXmlConverterTests&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::AD889C7E-9909-4DF4-82F0-F6741B16F043::net7.0::FileConversionLibrary.Tests.XmlToCsvConverterTests&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
+  &lt;Project Location="C:\Users\User\RiderProjects\FileConversionLibrary\FileConversionLibrary.Tests" Presentation="&amp;lt;FileConversionLibrary.Tests&amp;gt;" /&gt;&#xD;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

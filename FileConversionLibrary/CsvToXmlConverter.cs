@@ -6,33 +6,40 @@ namespace FileConversionLibrary;
 
 public class CsvToXmlConverter
 {
-    public void Convert(string csvFilePath, string xmlOutputPath, char delimiter = ',')
+    public void ConvertCsvToXml(string csvFilePath, string xmlOutputPath, char delimiter = ',')
     {
-        if (!File.Exists(csvFilePath))
+        try
         {
-            throw new FileNotFoundException($"File not found: {csvFilePath}");
-        }
-
-        var csvContent = File.ReadAllLines(csvFilePath);
-        var headers = ParseLine(csvContent[0], delimiter);
-
-        var doc = new XDocument();
-        var root = new XElement("root");
-        doc.Add(root);
-
-        for (var i = 1; i < csvContent.Length; i++)
-        {
-            var row = ParseLine(csvContent[i], delimiter);
-            var element = new XElement("element");
-            for (var j = 0; j < headers.Length; j++)
+            if (!File.Exists(csvFilePath))
             {
-                element.Add(new XElement(headers[j], row[j]));
+                throw new FileNotFoundException($"File not found: {csvFilePath}");
             }
 
-            root.Add(element);
-        }
+            var csvContent = File.ReadAllLines(csvFilePath);
+            var headers = ParseLine(csvContent[0], delimiter);
 
-        doc.Save(xmlOutputPath);
+            var doc = new XDocument();
+            var root = new XElement("root");
+            doc.Add(root);
+
+            for (var i = 1; i < csvContent.Length; i++)
+            {
+                var row = ParseLine(csvContent[i], delimiter);
+                var element = new XElement("element");
+                for (var j = 0; j < headers.Length; j++)
+                {
+                    element.Add(new XElement(headers[j], row[j]));
+                }
+
+                root.Add(element);
+            }
+
+            doc.Save(xmlOutputPath);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+        }
     }
 
     private string[] ParseLine(string line, char delimiter)

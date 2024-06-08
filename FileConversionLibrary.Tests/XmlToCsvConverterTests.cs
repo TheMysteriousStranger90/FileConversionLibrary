@@ -23,7 +23,7 @@ namespace FileConversionLibrary.Tests
             var csvOutputPath = "test.csv";
 
             // Act
-            _converter.Convert(xmlFilePath, csvOutputPath);
+            _converter.ConvertXmlToCsv(xmlFilePath, csvOutputPath);
 
             // Assert
             Assert.IsTrue(File.Exists(csvOutputPath));
@@ -37,7 +37,7 @@ namespace FileConversionLibrary.Tests
             var csvOutputPath = "test.csv";
 
             // Act
-            _converter.Convert(xmlFilePath, csvOutputPath);
+            _converter.ConvertXmlToCsv(xmlFilePath, csvOutputPath);
 
             // Assert
             Assert.IsTrue(File.Exists(csvOutputPath));
@@ -51,7 +51,7 @@ namespace FileConversionLibrary.Tests
             var csvOutputPath = "test.csv";
 
             // Act
-            _converter.Convert(xmlFilePath, csvOutputPath);
+            _converter.ConvertXmlToCsv(xmlFilePath, csvOutputPath);
 
             // Assert
             Assert.IsTrue(File.Exists(csvOutputPath));

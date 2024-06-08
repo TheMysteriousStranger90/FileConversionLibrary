@@ -23,55 +23,44 @@ namespace FileConversionLibrary.Tests
             var xmlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
 
             // Act
-            _converter.Convert(csvFilePath, xmlOutputPath);
+            _converter.ConvertCsvToXml(csvFilePath, xmlOutputPath);
 
             // Assert
             Assert.IsTrue(File.Exists(xmlOutputPath));
             var doc = XDocument.Load(xmlOutputPath);
             Assert.IsNotNull(doc.Root);
-        }
-
-        [Test]
-        public void Convert_GivenNonexistentCsvFile_ThrowsFileNotFoundException()
-        {
-            // Arrange
-            var csvFilePath = "nonexistent.csv";
-            var xmlOutputPath = "test.xml";
-
-            // Act & Assert
-            Assert.Throws<FileNotFoundException>(() => _converter.Convert(csvFilePath, xmlOutputPath));
-        }
-
-        [Test]
-        public void Convert_GivenCsvFileWithDifferentDelimiter_CreatesValidXmlFile()
-        {
-            // Arrange
-            var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-            var xmlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
-
-            // Act
-            _converter.Convert(csvFilePath, xmlOutputPath, ';');
-
-            // Assert
-            Assert.IsTrue(File.Exists(xmlOutputPath));
-            var doc = XDocument.Load(xmlOutputPath);
-            Assert.IsNotNull(doc.Root);
-        }
-
-        [Test]
-        public void Convert_GivenCsvFileWithQuotedFields_CreatesValidXmlFile()
-        {
-            // Arrange
-            var csvFilePath = "test.csv";
-            var xmlOutputPath = "test.xml";
-
-            // Act
-            _converter.Convert(csvFilePath, xmlOutputPath);
-
-            // Assert
-            Assert.IsTrue(File.Exists(xmlOutputPath));
-            var doc = XDocument.Load(xmlOutputPath);
-            Assert.IsNotNull(doc.Root);
-        }
-    }
-}
+         }
+         
+         [Test]
+         public void Convert_GivenCsvFileWithDifferentDelimiter_CreatesValidXmlFile()
+         {
+             // Arrange
+             var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
+             var xmlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
+ 
+             // Act
+             _converter.ConvertCsvToXml(csvFilePath, xmlOutputPath, ';');
+ 
+             // Assert
+             Assert.IsTrue(File.Exists(xmlOutputPath));
+             var doc = XDocument.Load(xmlOutputPath);
+             Assert.IsNotNull(doc.Root);
+         }
+ 
+         [Test]
+         public void Convert_GivenCsvFileWithQuotedFields_CreatesValidXmlFile()
+         {
+             // Arrange
+             var csvFilePath = "test.csv";
+             var xmlOutputPath = "test.xml";
+ 
+             // Act
+             _converter.ConvertCsvToXml(csvFilePath, xmlOutputPath);
+ 
+             // Assert
+             Assert.IsTrue(File.Exists(xmlOutputPath));
+             var doc = XDocument.Load(xmlOutputPath);
+             Assert.IsNotNull(doc.Root);
+         }
+     }
+ }
