@@ -16,23 +16,32 @@ class Program
 
         // CSV to Word Conversion
         var csvToWordConverter = new CsvToWordConverter();
-        await csvToWordConverter.ConvertAsync(@"C:\Users\User\Desktop\sample.csv", @"C:\Users\User\Desktop\output.docx");
+        await csvToWordConverter.ConvertAsync(@"C:\Users\User\Desktop\sample.csv",
+            @"C:\Users\User\Desktop\output.docx");
         Console.WriteLine("CSV to Word conversion completed.");
 
         // CSV to YAML Conversion
         var csvToYamlConverter = new CsvToYamlConverter();
-        await csvToYamlConverter.ConvertAsync(@"C:\Users\User\Desktop\sample.csv", @"C:\Users\User\Desktop\output.yaml");
+        await csvToYamlConverter.ConvertAsync(@"C:\Users\User\Desktop\sample.csv",
+            @"C:\Users\User\Desktop\output.yaml");
         Console.WriteLine("CSV to YAML conversion completed.");
 
         // CSV to JSON Conversion
         var csvToJsonConverter = new CsvToJsonConverter();
-        await csvToJsonConverter.ConvertAsync(@"C:\Users\User\Desktop\sample.csv", @"C:\Users\User\Desktop\output.json");
+        await csvToJsonConverter.ConvertAsync(@"C:\Users\User\Desktop\sample.csv",
+            @"C:\Users\User\Desktop\output.json");
         Console.WriteLine("CSV to JSON conversion completed.");
-/*
+
+
         // XML to CSV Conversion
         var xmlToCsvConverter = new XmlToCsvConverter();
         await xmlToCsvConverter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.csv");
         Console.WriteLine("XML to CSV conversion completed.");
+
+        // XML to YAML Conversion
+        var xmlToYamlConverter = new XmlToYamlConverter();
+        await xmlToYamlConverter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.yaml");
+        Console.WriteLine("XML to YAML conversion completed.");
 
         // XML to PDF Conversion
         var xmlToPdfConverter = new XmlToPdfConverter();
@@ -44,16 +53,9 @@ class Program
         await xmlToWordConverter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.docx");
         Console.WriteLine("XML to Word conversion completed.");
 
-        // XML to YAML Conversion
-        var xmlToYamlConverter = new XmlToYamlConverter();
-        await xmlToYamlConverter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.yaml");
-        Console.WriteLine("XML to YAML conversion completed.");
-
         // XML to JSON Conversion
         var xmlToJsonConverter = new XmlToJsonConverter();
         await xmlToJsonConverter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.json");
         Console.WriteLine("XML to JSON conversion completed.");
-        
-        */
     }
 }
