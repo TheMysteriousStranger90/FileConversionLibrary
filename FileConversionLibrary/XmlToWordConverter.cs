@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml;
+﻿using System.Xml;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using FileConversionLibrary.Helpers;
@@ -6,16 +7,15 @@ using FileConversionLibrary.Interfaces;
 
 namespace FileConversionLibrary;
 
-public class CsvToWordConverter : ICsvConverter
+public class XmlToWordConverter : IXmlConverter
 {
-    public async Task ConvertAsync(string csvFilePath, string wordOutputPath, char delimiter = ',')
+    public async Task ConvertAsync(string xmlFilePath, string wordOutputPath)
     {
         try
         {
-            var csvData = await CsvHelperFile.ReadCsvAsync(csvFilePath, delimiter);
+            var (headers, rows) = await XmlHelperFile.ReadXmlAsync(xmlFilePath);
 
-            using (var wordDocument =
-                   WordprocessingDocument.Create(wordOutputPath, WordprocessingDocumentType.Document))
+            using (var wordDocument = WordprocessingDocument.Create(wordOutputPath, WordprocessingDocumentType.Document))
             {
                 var mainPart = wordDocument.AddMainDocumentPart();
                 mainPart.Document = new Document();
@@ -23,21 +23,27 @@ public class CsvToWordConverter : ICsvConverter
 
                 var headerParagraph = body.AppendChild(new Paragraph());
                 var headerRun = headerParagraph.AppendChild(new Run());
-                headerRun.AppendChild(new Text(string.Join(" ", csvData.Headers)));
+                headerRun.AppendChild(new Text(string.Join(" ", headers)));
 
-                foreach (var row in csvData.Rows)
+                foreach (var row in rows)
                 {
                     var paragraph = body.AppendChild(new Paragraph());
                     var run = paragraph.AppendChild(new Run());
                     run.AppendChild(new Text(string.Join(" ", row)));
                 }
             }
-            Console.WriteLine($"Saving Word file");
-            Console.WriteLine("Word file saved successfully.");
         }
-        catch (Exception ex)
+        catch (FileNotFoundException e)
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            Console.WriteLine($"File not found: {e.FileName}");
+        }
+        catch (XmlException e)
+        {
+            Console.WriteLine($"Invalid XML: {e.Message}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Unexpected error: {e.Message}");
         }
     }
 }

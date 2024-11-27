@@ -1,26 +1,30 @@
 ﻿using System.Data;
 using System.Xml;
+using FileConversionLibrary.Helpers;
+using FileConversionLibrary.Interfaces;
 
 namespace FileConversionLibrary;
 
-public class XmlToCsvConverter
+public class XmlToCsvConverter : IXmlConverter
 {
-    public void ConvertXmlToCsv(string xmlFilePath, string csvOutputPath)
+    public async Task ConvertAsync(string xmlFilePath, string csvOutputPath)
     {
         try
         {
-            var xmlContent = File.ReadAllText(xmlFilePath);
-            var xmlFile = new XmlDocument();
-            xmlFile.LoadXml(xmlContent);
+            var (headers, rows) = await XmlHelperFile.ReadXmlAsync(xmlFilePath);
 
-            var xmlReader = new XmlNodeReader(xmlFile);
-            var dataSet = new DataSet();
-            dataSet.ReadXml(xmlReader);
-
-            foreach (DataTable table in dataSet.Tables)
+            var lines = new List<string>
             {
-                WriteTableToCsv(table, csvOutputPath);
+                string.Join(",", headers.Select(QuoteValue))
+            };
+
+            foreach (var row in rows)
+            {
+                var line = string.Join(",", row.Select(QuoteValue));
+                lines.Add(line);
             }
+
+            await File.WriteAllLinesAsync(csvOutputPath, lines);
         }
         catch (FileNotFoundException e)
         {
@@ -34,22 +38,6 @@ public class XmlToCsvConverter
         {
             Console.WriteLine($"Unexpected error: {e.Message}");
         }
-    }
-
-    private void WriteTableToCsv(DataTable table, string outputPath)
-    {
-        var lines = new List<string>();
-
-        var header = string.Join(",", table.Columns.Cast<DataColumn>().Select(column => QuoteValue(column.ColumnName)));
-        lines.Add(header);
-
-        foreach (DataRow row in table.Rows)
-        {
-            var line = string.Join(",", row.ItemArray.Select(value => QuoteValue(value.ToString())));
-            lines.Add(line);
-        }
-
-        File.WriteAllLines(outputPath, lines);
     }
 
     private string QuoteValue(string value)

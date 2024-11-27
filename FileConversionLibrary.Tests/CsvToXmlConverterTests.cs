@@ -2,65 +2,70 @@
 using System.IO;
 using System.Xml.Linq;
 
-namespace FileConversionLibrary.Tests
+namespace FileConversionLibrary.Tests;
+
+[TestFixture]
+public class CsvToXmlConverterTests
 {
-    [TestFixture]
-    public class CsvToXmlConverterTests
+    private CsvToXmlConverter _converter;
+
+    [SetUp]
+    public void SetUp()
     {
-        private CsvToXmlConverter _converter;
+        _converter = new CsvToXmlConverter();
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            _converter = new CsvToXmlConverter();
-        }
+    [Test]
+    public async Task ConvertAsync_GivenValidCsvFile_CreatesValidXmlFile()
+    {
+        // Arrange
+        var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
+        var xmlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
 
-        [Test]
-        public void Convert_GivenValidCsvFile_CreatesValidXmlFile()
-        {
-            // Arrange
-            var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-            var xmlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
+        await File.WriteAllTextAsync(csvFilePath, "Name,Age\nJohn,30\nJane,25");
 
-            // Act
-            _converter.ConvertCsvToXml(csvFilePath, xmlOutputPath);
+        // Act
+        await _converter.ConvertAsync(csvFilePath, xmlOutputPath);
 
-            // Assert
-            Assert.IsTrue(File.Exists(xmlOutputPath));
-            var doc = XDocument.Load(xmlOutputPath);
-            Assert.IsNotNull(doc.Root);
-         }
-         
-         [Test]
-         public void Convert_GivenCsvFileWithDifferentDelimiter_CreatesValidXmlFile()
-         {
-             // Arrange
-             var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-             var xmlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
- 
-             // Act
-             _converter.ConvertCsvToXml(csvFilePath, xmlOutputPath, ';');
- 
-             // Assert
-             Assert.IsTrue(File.Exists(xmlOutputPath));
-             var doc = XDocument.Load(xmlOutputPath);
-             Assert.IsNotNull(doc.Root);
-         }
- 
-         [Test]
-         public void Convert_GivenCsvFileWithQuotedFields_CreatesValidXmlFile()
-         {
-             // Arrange
-             var csvFilePath = "test.csv";
-             var xmlOutputPath = "test.xml";
- 
-             // Act
-             _converter.ConvertCsvToXml(csvFilePath, xmlOutputPath);
- 
-             // Assert
-             Assert.IsTrue(File.Exists(xmlOutputPath));
-             var doc = XDocument.Load(xmlOutputPath);
-             Assert.IsNotNull(doc.Root);
-         }
-     }
- }
+        // Assert
+        Assert.IsTrue(File.Exists(xmlOutputPath));
+        var doc = XDocument.Load(xmlOutputPath);
+        Assert.IsNotNull(doc.Root);
+    }
+
+    [Test]
+    public async Task ConvertAsync_GivenCsvFileWithDifferentDelimiter_CreatesValidXmlFile()
+    {
+        // Arrange
+        var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
+        var xmlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
+
+        await File.WriteAllTextAsync(csvFilePath, "Name;Age\nJohn;30\nJane;25");
+
+        // Act
+        await _converter.ConvertAsync(csvFilePath, xmlOutputPath, ';');
+
+        // Assert
+        Assert.IsTrue(File.Exists(xmlOutputPath));
+        var doc = XDocument.Load(xmlOutputPath);
+        Assert.IsNotNull(doc.Root);
+    }
+
+    [Test]
+    public async Task ConvertAsync_GivenCsvFileWithQuotedFields_CreatesValidXmlFile()
+    {
+        // Arrange
+        var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
+        var xmlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
+
+        await File.WriteAllTextAsync(csvFilePath, "\"Name\",\"Age\"\n\"John\",\"30\"\n\"Jane\",\"25\"");
+
+        // Act
+        await _converter.ConvertAsync(csvFilePath, xmlOutputPath);
+
+        // Assert
+        Assert.IsTrue(File.Exists(xmlOutputPath));
+        var doc = XDocument.Load(xmlOutputPath);
+        Assert.IsNotNull(doc.Root);
+    }
+}

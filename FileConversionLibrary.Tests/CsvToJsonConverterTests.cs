@@ -14,34 +14,38 @@ public class CsvToJsonConverterTests
     }
 
     [Test]
-    public void Convert_GivenValidCsvFile_CreatesValidJsonFile()
+    public async Task ConvertAsync_GivenValidCsvFile_CreatesValidJsonFile()
     {
         // Arrange
         var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
         var jsonOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.json");
+        
+        await File.WriteAllTextAsync(csvFilePath, "Name,Age\nJohn,30\nJane,25");
 
         // Act
-        _converter.ConvertCsvToJson(csvFilePath, jsonOutputPath);
+        await _converter.ConvertAsync(csvFilePath, jsonOutputPath);
 
         // Assert
         Assert.IsTrue(File.Exists(jsonOutputPath));
-        var json = File.ReadAllText(jsonOutputPath);
+        var json = await File.ReadAllTextAsync(jsonOutputPath);
         Assert.IsNotNull(JsonConvert.DeserializeObject(json));
     }
-        
+
     [Test]
-    public void Convert_GivenCsvFileWithDifferentDelimiter_CreatesValidJsonFile()
+    public async Task ConvertAsync_GivenCsvFileWithDifferentDelimiter_CreatesValidJsonFile()
     {
         // Arrange
         var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
         var jsonOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.json");
+        
+        await File.WriteAllTextAsync(csvFilePath, "Name;Age\nJohn;30\nJane;25");
 
         // Act
-        _converter.ConvertCsvToJson(csvFilePath, jsonOutputPath, ';');
+        await _converter.ConvertAsync(csvFilePath, jsonOutputPath, ';');
 
         // Assert
         Assert.IsTrue(File.Exists(jsonOutputPath));
-        var json = File.ReadAllText(jsonOutputPath);
+        var json = await File.ReadAllTextAsync(jsonOutputPath);
         Assert.IsNotNull(JsonConvert.DeserializeObject(json));
     }
 }

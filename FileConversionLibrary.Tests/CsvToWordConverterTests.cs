@@ -12,28 +12,32 @@ public class CsvToWordConverterTests
     }
 
     [Test]
-    public void Convert_GivenValidCsvFile_CreatesWordFile()
+    public async Task ConvertAsync_GivenValidCsvFile_CreatesWordFile()
     {
         // Arrange
         var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
         var wordOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.docx");
+        
+        await File.WriteAllTextAsync(csvFilePath, "Name,Age\nJohn,30\nJane,25");
 
         // Act
-        _converter.ConvertCsvToWord(csvFilePath, wordOutputPath);
+        await _converter.ConvertAsync(csvFilePath, wordOutputPath);
 
         // Assert
         Assert.IsTrue(File.Exists(wordOutputPath));
     }
-        
+
     [Test]
-    public void Convert_GivenCsvFileWithDifferentDelimiter_CreatesWordFile()
+    public async Task ConvertAsync_GivenCsvFileWithDifferentDelimiter_CreatesWordFile()
     {
         // Arrange
         var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
         var wordOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.docx");
+        
+        await File.WriteAllTextAsync(csvFilePath, "Name;Age\nJohn;30\nJane;25");
 
         // Act
-        _converter.ConvertCsvToWord(csvFilePath, wordOutputPath, ';');
+        await _converter.ConvertAsync(csvFilePath, wordOutputPath, ';');
 
         // Assert
         Assert.IsTrue(File.Exists(wordOutputPath));
