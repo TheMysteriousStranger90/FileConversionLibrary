@@ -16,23 +16,20 @@ public class CsvToXmlConverter : ICsvConverter
             var doc = new XDocument();
             var root = new XElement("root");
             doc.Add(root);
-
-            // Обрабатываем каждую строку данных CSV
+            
             foreach (var row in csvData.Rows)
             {
                 var element = new XElement("element");
-
-                // Обрабатываем каждый заголовок и его соответствующее значение
+                
                 for (var j = 0; j < csvData.Headers.Length; j++)
                 {
                     var header = csvData.Headers[j]
-                        .Trim()  // Убираем лишние пробелы
-                        .Replace(";", "")  // Убираем лишние символы
-                        .Replace(" ", "_")  // Заменяем пробелы на _
-                        .Replace("-", "_")  // Заменяем дефисы на _
-                        .Replace("/", "_");  // Заменяем слэши на _
-
-                    // Добавляем элемент с соответствующим значением
+                        .Trim()
+                        .Replace(";", "")
+                        .Replace(" ", "_")
+                        .Replace("-", "_")
+                        .Replace("/", "_");
+                    
                     element.Add(new XElement(header, row[j]));
                 }
 
