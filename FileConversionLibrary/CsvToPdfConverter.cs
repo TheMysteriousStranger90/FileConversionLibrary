@@ -34,8 +34,7 @@ public class CsvToPdfConverter : ICsvConverter
                     };
                     table.AddCell(cell);
                 }
-
-                // Add data rows
+                
                 foreach (var row in csvData.Rows)
                 {
                     foreach (var cell in row)

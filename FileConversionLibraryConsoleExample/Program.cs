@@ -6,27 +6,27 @@ class Program
     {
         // CSV to XML Conversion
         var csvToXmlConverter = new CsvToXmlConverter();
-        await csvToXmlConverter.ConvertAsync(@"C:\Users\User\Desktop\input.csv", @"C:\Users\User\Desktop\output.xml");
+        await csvToXmlConverter.ConvertAsync(@"C:\Users\User\Desktop\sample.csv", @"C:\Users\User\Desktop\output.xml");
         Console.WriteLine("CSV to XML conversion completed.");
 
         // CSV to PDF Conversion
         var csvToPdfConverter = new CsvToPdfConverter();
-        await csvToPdfConverter.ConvertAsync(@"C:\Users\User\Desktop\input.csv", @"C:\Users\User\Desktop\output.pdf");
+        await csvToPdfConverter.ConvertAsync(@"C:\Users\User\Desktop\sample.csv", @"C:\Users\User\Desktop\output.pdf");
         Console.WriteLine("CSV to PDF conversion completed.");
 
         // CSV to Word Conversion
         var csvToWordConverter = new CsvToWordConverter();
-        await csvToWordConverter.ConvertAsync(@"C:\Users\User\Desktop\input.csv", @"C:\Users\User\Desktop\output.docx");
+        await csvToWordConverter.ConvertAsync(@"C:\Users\User\Desktop\sample.csv", @"C:\Users\User\Desktop\output.docx");
         Console.WriteLine("CSV to Word conversion completed.");
 
         // CSV to YAML Conversion
         var csvToYamlConverter = new CsvToYamlConverter();
-        await csvToYamlConverter.ConvertAsync(@"C:\Users\User\Desktop\input.csv", @"C:\Users\User\Desktop\output.yaml");
+        await csvToYamlConverter.ConvertAsync(@"C:\Users\User\Desktop\sample.csv", @"C:\Users\User\Desktop\output.yaml");
         Console.WriteLine("CSV to YAML conversion completed.");
 
         // CSV to JSON Conversion
         var csvToJsonConverter = new CsvToJsonConverter();
-        await csvToJsonConverter.ConvertAsync(@"C:\Users\User\Desktop\input.csv", @"C:\Users\User\Desktop\output.json");
+        await csvToJsonConverter.ConvertAsync(@"C:\Users\User\Desktop\sample.csv", @"C:\Users\User\Desktop\output.json");
         Console.WriteLine("CSV to JSON conversion completed.");
 /*
         // XML to CSV Conversion

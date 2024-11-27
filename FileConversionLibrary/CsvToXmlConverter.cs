@@ -16,17 +16,24 @@ public class CsvToXmlConverter : ICsvConverter
             var doc = new XDocument();
             var root = new XElement("root");
             doc.Add(root);
-            
+
+            // Обрабатываем каждую строку данных CSV
             foreach (var row in csvData.Rows)
             {
                 var element = new XElement("element");
 
+                // Обрабатываем каждый заголовок и его соответствующее значение
                 for (var j = 0; j < csvData.Headers.Length; j++)
                 {
-                    var header = MakeValidXmlName(csvData.Headers[j]);
-                    var value = row[j]?.Trim();
-                    
-                    element.Add(new XElement(header, value));
+                    var header = csvData.Headers[j]
+                        .Trim()  // Убираем лишние пробелы
+                        .Replace(";", "")  // Убираем лишние символы
+                        .Replace(" ", "_")  // Заменяем пробелы на _
+                        .Replace("-", "_")  // Заменяем дефисы на _
+                        .Replace("/", "_");  // Заменяем слэши на _
+
+                    // Добавляем элемент с соответствующим значением
+                    element.Add(new XElement(header, row[j]));
                 }
 
                 root.Add(element);
@@ -48,17 +55,5 @@ public class CsvToXmlConverter : ICsvConverter
         {
             Console.WriteLine($"An error occurred: {ex.Message}");
         }
-    }
-    
-    private string MakeValidXmlName(string name)
-    {
-        var validName = new string(name.Where(char.IsLetterOrDigit).ToArray());
-        
-        if (char.IsDigit(validName.FirstOrDefault()))
-        {
-            validName = "_" + validName;
-        }
-
-        return validName;
     }
 }

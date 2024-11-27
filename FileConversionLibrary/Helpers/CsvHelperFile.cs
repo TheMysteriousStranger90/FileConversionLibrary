@@ -44,7 +44,7 @@ public static class CsvHelperFile
         var words = key
             .Split(new[] { ' ', '-', '_', ';' }, StringSplitOptions.RemoveEmptyEntries)
             .Select(w => char.ToUpper(w[0]) + w.Substring(1).ToLower());
-    
+
         return string.Join("", words).Replace("/", "_");
     }
 }

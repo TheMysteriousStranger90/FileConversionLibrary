@@ -14,32 +14,19 @@ public class CsvToYamlConverter : ICsvConverter
             Console.WriteLine($"Reading CSV file from: {csvFilePath}");
             var csvData = await CsvHelperFile.ReadCsvAsync(csvFilePath, delimiter);
 
-            var csvList = new List<Dictionary<string, string>>();
-
+            var yamlLines = new List<string>();
+            
+            yamlLines.Add($"- {string.Join(";", csvData.Headers)}");
+            
             foreach (var row in csvData.Rows)
             {
-                var rowData = new Dictionary<string, string>();
-                for (var j = 0; j < csvData.Headers.Length; j++)
-                {
-                    var header = CsvHelperFile.MakeValidYamlKey(csvData.Headers[j].Trim());
-                    var value = row[j]?.Trim();
-                    
-                    if (!rowData.ContainsKey(header))
-                    {
-                        rowData.Add(header, value);
-                    }
-                }
-                csvList.Add(rowData);
+                yamlLines.Add($"- {string.Join(";", row)}");
             }
-            
-            var serializer = new SerializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance).WithIndentedSequences()
-                .Build();
 
-            var yaml = serializer.Serialize(csvList);
+            var yamlContent = string.Join(Environment.NewLine, yamlLines);
 
             Console.WriteLine($"Saving YAML file to: {yamlOutputPath}");
-            await File.WriteAllTextAsync(yamlOutputPath, yaml);
+            await File.WriteAllTextAsync(yamlOutputPath, yamlContent);
             Console.WriteLine("YAML file saved successfully.");
         }
         catch (Exception ex)
