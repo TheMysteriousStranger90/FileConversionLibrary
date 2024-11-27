@@ -1,58 +1,64 @@
-﻿using System.Data;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
+using FileConversionLibrary.Helpers;
+using FileConversionLibrary.Interfaces;
 
 namespace FileConversionLibrary;
 
-public class CsvToXmlConverter
+public class CsvToXmlConverter : ICsvConverter
 {
-    public void ConvertCsvToXml(string csvFilePath, string xmlOutputPath, char delimiter = ',')
+    public async Task ConvertAsync(string csvFilePath, string xmlOutputPath, char delimiter = ',')
     {
         try
         {
-            if (!File.Exists(csvFilePath))
-            {
-                throw new FileNotFoundException($"File not found: {csvFilePath}");
-            }
-
-            var csvContent = File.ReadAllLines(csvFilePath);
-            var headers = ParseLine(csvContent[0], delimiter);
+            Console.WriteLine($"Reading CSV file from: {csvFilePath}");
+            var csvData = await CsvHelperFile.ReadCsvAsync(csvFilePath, delimiter);
 
             var doc = new XDocument();
             var root = new XElement("root");
             doc.Add(root);
-
-            for (var i = 1; i < csvContent.Length; i++)
+            
+            foreach (var row in csvData.Rows)
             {
-                var row = ParseLine(csvContent[i], delimiter);
                 var element = new XElement("element");
-                for (var j = 0; j < headers.Length; j++)
+
+                for (var j = 0; j < csvData.Headers.Length; j++)
                 {
-                    element.Add(new XElement(headers[j], row[j]));
+                    var header = MakeValidXmlName(csvData.Headers[j]);
+                    var value = row[j]?.Trim();
+                    
+                    element.Add(new XElement(header, value));
                 }
 
                 root.Add(element);
             }
 
+            Console.WriteLine($"Saving XML file to: {xmlOutputPath}");
             doc.Save(xmlOutputPath);
+            Console.WriteLine("XML file saved successfully.");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Console.WriteLine($"Access denied: {ex.Message}");
+        }
+        catch (IOException ex)
+        {
+            Console.WriteLine($"I/O error: {ex.Message}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"An error occurred: {ex.Message}");
         }
     }
-
-    private string[] ParseLine(string line, char delimiter)
+    
+    private string MakeValidXmlName(string name)
     {
-        var pattern = $"{delimiter}(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))";
-        var regex = new Regex(pattern);
-        var fields = regex.Split(line);
-
-        for (var i = 0; i < fields.Length; i++)
+        var validName = new string(name.Where(char.IsLetterOrDigit).ToArray());
+        
+        if (char.IsDigit(validName.FirstOrDefault()))
         {
-            fields[i] = fields[i].Trim('\"').Replace("\"\"", "\"");
+            validName = "_" + validName;
         }
 
-        return fields;
+        return validName;
     }
 }

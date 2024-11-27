@@ -1,40 +1,55 @@
-﻿using iTextSharp.text;
+﻿using FileConversionLibrary.Helpers;
+using FileConversionLibrary.Interfaces;
+using iTextSharp.text;
 using iTextSharp.text.pdf;
 
 namespace FileConversionLibrary;
 
-public class CsvToPdfConverter
+public class CsvToPdfConverter : ICsvConverter
 {
-    public void ConvertCsvToPdf(string csvFilePath, string pdfOutputPath, char delimiter = ',')
+    public async Task ConvertAsync(string csvFilePath, string pdfOutputPath, char delimiter = ',')
     {
         try
         {
-            var csvContent = File.ReadAllLines(csvFilePath);
-            var headers = csvContent[0].Split(delimiter);
-
+            var csvData = await CsvHelperFile.ReadCsvAsync(csvFilePath, delimiter);
             using (var stream = new FileStream(pdfOutputPath, FileMode.Create))
             {
-                var document = new Document();
+                var document = new Document(PageSize.A4, 10, 10, 10, 10);
                 var pdfWriter = PdfWriter.GetInstance(document, stream);
 
                 document.Open();
 
-                var table = new PdfPTable(headers.Length);
-                foreach (var header in headers)
+                var table = new PdfPTable(csvData.Headers.Length)
                 {
-                    table.AddCell(header);
+                    WidthPercentage = 100,
+                    HorizontalAlignment = Element.ALIGN_LEFT
+                };
+                
+                foreach (var header in csvData.Headers)
+                {
+                    var cell = new PdfPCell(new Phrase(header))
+                    {
+                        BackgroundColor = BaseColor.LIGHT_GRAY,
+                        HorizontalAlignment = Element.ALIGN_CENTER
+                    };
+                    table.AddCell(cell);
                 }
 
-                for (var i = 1; i < csvContent.Length; i++)
+                // Add data rows
+                foreach (var row in csvData.Rows)
                 {
-                    var row = csvContent[i].Split(delimiter);
                     foreach (var cell in row)
                     {
-                        table.AddCell(cell);
+                        table.AddCell(new PdfPCell(new Phrase(cell))
+                        {
+                            HorizontalAlignment = Element.ALIGN_CENTER
+                        });
                     }
                 }
 
                 document.Add(table);
+                Console.WriteLine($"Saving PDF file");
+                Console.WriteLine("PDF file saved successfully.");
                 document.Close();
             }
         }

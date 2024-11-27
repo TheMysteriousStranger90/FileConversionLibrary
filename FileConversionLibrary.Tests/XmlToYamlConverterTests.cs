@@ -1,23 +1,24 @@
 ﻿namespace FileConversionLibrary.Tests;
 
 [TestFixture]
-public class XmlToCsvConverterTests
+public class XmlToYamlConverterTests
 {
-    private XmlToCsvConverter _converter;
+    private XmlToYamlConverter _converter;
 
     [SetUp]
     public void SetUp()
     {
-        _converter = new XmlToCsvConverter();
+        _converter = new XmlToYamlConverter();
     }
 
     [Test]
-    public async Task ConvertAsync_GivenValidXmlFile_CreatesValidCsvFile()
+    public async Task ConvertAsync_GivenValidXmlFile_CreatesYamlFile()
     {
         // Arrange
         var xmlFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
-        var csvOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-        
+        var yamlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.yaml");
+
+        // Create a sample XML file
         var xmlContent = @"<root>
                                 <element>
                                     <Name>John</Name>
@@ -31,19 +32,20 @@ public class XmlToCsvConverterTests
         await File.WriteAllTextAsync(xmlFilePath, xmlContent);
 
         // Act
-        await _converter.ConvertAsync(xmlFilePath, csvOutputPath);
+        await _converter.ConvertAsync(xmlFilePath, yamlOutputPath);
 
         // Assert
-        Assert.IsTrue(File.Exists(csvOutputPath));
+        Assert.IsTrue(File.Exists(yamlOutputPath));
     }
 
     [Test]
-    public async Task ConvertAsync_GivenXmlFileWithNestedElements_CreatesValidCsvFile()
+    public async Task ConvertAsync_GivenXmlFileWithNestedElements_CreatesYamlFile()
     {
         // Arrange
         var xmlFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test_nested_elements.xml");
-        var csvOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-        
+        var yamlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.yaml");
+
+        // Create a sample XML file with nested elements
         var xmlContent = @"<root>
                                 <element>
                                     <Name>John</Name>
@@ -61,19 +63,20 @@ public class XmlToCsvConverterTests
         await File.WriteAllTextAsync(xmlFilePath, xmlContent);
 
         // Act
-        await _converter.ConvertAsync(xmlFilePath, csvOutputPath);
+        await _converter.ConvertAsync(xmlFilePath, yamlOutputPath);
 
         // Assert
-        Assert.IsTrue(File.Exists(csvOutputPath));
+        Assert.IsTrue(File.Exists(yamlOutputPath));
     }
 
     [Test]
-    public async Task ConvertAsync_GivenXmlFileWithAttributes_CreatesValidCsvFile()
+    public async Task ConvertAsync_GivenXmlFileWithAttributes_CreatesYamlFile()
     {
         // Arrange
         var xmlFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test_attributes.xml");
-        var csvOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-        
+        var yamlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.yaml");
+
+        // Create a sample XML file with attributes
         var xmlContent = @"<root>
                                 <element Name='John' Age='30' />
                                 <element Name='Jane' Age='25' />
@@ -81,9 +84,9 @@ public class XmlToCsvConverterTests
         await File.WriteAllTextAsync(xmlFilePath, xmlContent);
 
         // Act
-        await _converter.ConvertAsync(xmlFilePath, csvOutputPath);
+        await _converter.ConvertAsync(xmlFilePath, yamlOutputPath);
 
         // Assert
-        Assert.IsTrue(File.Exists(csvOutputPath));
+        Assert.IsTrue(File.Exists(yamlOutputPath));
     }
 }

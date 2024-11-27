@@ -12,28 +12,32 @@ public class CsvToPdfConverterTests
     }
 
     [Test]
-    public void Convert_GivenValidCsvFile_CreatesPdfFile()
+    public async Task ConvertAsync_GivenValidCsvFile_CreatesPdfFile()
     {
         // Arrange
         var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
         var pdfOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.pdf");
+        
+        await File.WriteAllTextAsync(csvFilePath, "Name,Age\nJohn,30\nJane,25");
 
         // Act
-        _converter.ConvertCsvToPdf(csvFilePath, pdfOutputPath);
+        await _converter.ConvertAsync(csvFilePath, pdfOutputPath);
 
         // Assert
         Assert.IsTrue(File.Exists(pdfOutputPath));
     }
-        
+
     [Test]
-    public void Convert_GivenCsvFileWithDifferentDelimiter_CreatesPdfFile()
+    public async Task ConvertAsync_GivenCsvFileWithDifferentDelimiter_CreatesPdfFile()
     {
         // Arrange
         var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
         var pdfOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.pdf");
+        
+        await File.WriteAllTextAsync(csvFilePath, "Name;Age\nJohn;30\nJane;25");
 
         // Act
-        _converter.ConvertCsvToPdf(csvFilePath, pdfOutputPath, ';');
+        await _converter.ConvertAsync(csvFilePath, pdfOutputPath, ';');
 
         // Assert
         Assert.IsTrue(File.Exists(pdfOutputPath));

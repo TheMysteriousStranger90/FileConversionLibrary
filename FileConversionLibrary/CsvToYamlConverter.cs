@@ -1,39 +1,46 @@
-﻿using YamlDotNet.Serialization;
+﻿using FileConversionLibrary.Helpers;
+using FileConversionLibrary.Interfaces;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace FileConversionLibrary;
 
-public class CsvToYamlConverter
+public class CsvToYamlConverter : ICsvConverter
 {
-    public void ConvertCsvToYaml(string csvFilePath, string yamlOutputPath, char delimiter = ',')
+    public async Task ConvertAsync(string csvFilePath, string yamlOutputPath, char delimiter = ',')
     {
         try
         {
-            if (!File.Exists(csvFilePath))
+            Console.WriteLine($"Reading CSV file from: {csvFilePath}");
+            var csvData = await CsvHelperFile.ReadCsvAsync(csvFilePath, delimiter);
+
+            var csvList = new List<Dictionary<string, string>>();
+
+            foreach (var row in csvData.Rows)
             {
-                throw new FileNotFoundException($"File not found: {csvFilePath}");
-            }
-
-            var csvContent = File.ReadAllLines(csvFilePath);
-            var headers = csvContent[0].Split(delimiter);
-
-            var csvData = new List<Dictionary<string, string>>();
-
-            for (var i = 1; i < csvContent.Length; i++)
-            {
-                var row = csvContent[i].Split(delimiter);
                 var rowData = new Dictionary<string, string>();
-
-                for (var j = 0; j < headers.Length; j++)
+                for (var j = 0; j < csvData.Headers.Length; j++)
                 {
-                    rowData.Add(headers[j], row[j]);
+                    var header = CsvHelperFile.MakeValidYamlKey(csvData.Headers[j].Trim());
+                    var value = row[j]?.Trim();
+                    
+                    if (!rowData.ContainsKey(header))
+                    {
+                        rowData.Add(header, value);
+                    }
                 }
-
-                csvData.Add(rowData);
+                csvList.Add(rowData);
             }
+            
+            var serializer = new SerializerBuilder()
+                .WithNamingConvention(CamelCaseNamingConvention.Instance).WithIndentedSequences()
+                .Build();
 
-            var serializer = new SerializerBuilder().Build();
-            var yaml = serializer.Serialize(csvData);
-            File.WriteAllText(yamlOutputPath, yaml);
+            var yaml = serializer.Serialize(csvList);
+
+            Console.WriteLine($"Saving YAML file to: {yamlOutputPath}");
+            await File.WriteAllTextAsync(yamlOutputPath, yaml);
+            Console.WriteLine("YAML file saved successfully.");
         }
         catch (Exception ex)
         {

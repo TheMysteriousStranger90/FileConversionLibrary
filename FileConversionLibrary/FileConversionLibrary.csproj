@@ -1,17 +1,47 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
-        <Version>1.1.0</Version>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>FileConversionLibrary</PackageId>
+        <Version>1.2.0</Version>
+        <Title>FileConversionLibrary</Title>
+        <Authors>Bohdan Harabadzhyu</Authors>
+        <Description>FileConversionLibrary is a .NET library for converting files between different formats.
+            It supports converting CSV files to XML, PDF, Word, JSON, and YAML formats, as well as converting XML files to CSV, PDF, Word, JSON, and YAML formats.
+            The library provides asynchronous methods for all conversions and includes comprehensive error handling.</Description>
+        <RepositoryUrl>https://github.com/TheMysteriousStranger90/FileConversionLibrary</RepositoryUrl>
+        <PackageTags>file-conversion, csv, xml</PackageTags>
+        <PackageReleaseNotes>Version 1.2.0:
+            - (Released: 27 November 2024) - Added async support for all converters.
+            - Implemented CsvHelperFile for reading CSV files.
+            - Implemented XmlHelperFile for reading XML files.
+            - Added unit tests for all converters.
+            - Improved error handling and logging..</PackageReleaseNotes>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>Cover.png</PackageIcon>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="CsvHelper" Version="33.0.1" />
         <PackageReference Include="DocumentFormat.OpenXml" Version="3.0.2" />
         <PackageReference Include="iTextSharp" Version="5.5.13.3" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="YamlDotNet" Version="15.1.6" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Cover.png">
+        <Pack>True</Pack>
+        <PackagePath></PackagePath>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 </Project>
