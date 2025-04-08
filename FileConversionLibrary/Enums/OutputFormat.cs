@@ -6,5 +6,6 @@ public enum OutputFormat
     Pdf,
     Word,
     Xml,
-    Yaml
+    Yaml,
+    Csv
 }

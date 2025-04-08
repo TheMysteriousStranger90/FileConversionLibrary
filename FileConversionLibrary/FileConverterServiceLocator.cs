@@ -10,6 +10,8 @@ namespace FileConversionLibrary;
 public class FileConverterServiceLocator
 {
     private readonly IExceptionHandler _exceptionHandler;
+    private readonly IFileReader<XmlData> _xmlReader;
+    private readonly IFileWriter<string> _csvWriter;
     private readonly IFileReader<CsvData> _csvReader;
     private readonly IFileWriter<string> _jsonWriter;
     private readonly IFileWriter<string> _xmlWriter;
@@ -28,29 +30,11 @@ public class FileConverterServiceLocator
         _yamlWriter = new YamlFileWriter(_exceptionHandler);
         _pdfWriter = new PdfFileWriter(_exceptionHandler);
         _wordWriter = new WordFileWriter(_exceptionHandler);
+        _xmlReader = new XmlFileReader(_exceptionHandler);
+        _csvWriter = new CsvFileWriter(_exceptionHandler);
         _converterFactory = new ConverterFactory();
     }
-
-    public FileConverterServiceLocator(
-        IExceptionHandler exceptionHandler,
-        IFileReader<CsvData> csvReader,
-        IFileWriter<string> jsonWriter,
-        IFileWriter<string> xmlWriter,
-        IFileWriter<string> yamlWriter,
-        IFileWriter<byte[]> pdfWriter,
-        IFileWriter<byte[]> wordWriter,
-        ConverterFactory converterFactory)
-    {
-        _exceptionHandler = exceptionHandler;
-        _csvReader = csvReader;
-        _jsonWriter = jsonWriter;
-        _xmlWriter = xmlWriter;
-        _yamlWriter = yamlWriter;
-        _pdfWriter = pdfWriter;
-        _wordWriter = wordWriter;
-        _converterFactory = converterFactory;
-    }
-
+    
     public FileConverterFacade GetFileConverterFacade()
     {
         _converterFacade ??= new FileConverterFacade(
@@ -60,6 +44,8 @@ public class FileConverterServiceLocator
             _yamlWriter,
             _pdfWriter,
             _wordWriter,
+            _xmlReader,
+            _csvWriter,
             _converterFactory,
             _exceptionHandler
         );

@@ -34,6 +34,16 @@ public class ConverterFactory
         {
             return (IConverter<TInput, TOutput>)(object)new CsvToWordConverter();
         }
+        
+        if (typeof(TInput) == typeof(XmlData) && typeof(TOutput) == typeof(string) && format == OutputFormat.Csv)
+        {
+            return (IConverter<TInput, TOutput>)(object)new XmlToCsvConverter();
+        }
+        
+        if (typeof(TInput) == typeof(XmlData) && typeof(TOutput) == typeof(string) && format == OutputFormat.Json)
+        {
+            return (IConverter<TInput, TOutput>)(object)new XmlToJsonConverter();
+        }
     
         throw new NotSupportedException($"Converter from {typeof(TInput)} to {typeof(TOutput)} with format {format} is not supported");
     }

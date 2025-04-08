@@ -6,7 +6,7 @@ class Program
     {
         var serviceLocator = new FileConverterServiceLocator();
         var converterFacade = serviceLocator.GetFileConverterFacade();
-        
+        /*
         // CSV to PDF Conversion
         await converterFacade.ConvertCsvToPdfAsync(
             @"C:\Users\User\Desktop\sample.csv",
@@ -40,12 +40,22 @@ class Program
             @"C:\Users\User\Desktop\output.yaml"
             );
         Console.WriteLine("CSV to YAML conversion completed.");
-/*
+        */
+        
         // XML to CSV Conversion
-        var xmlToCsvConverter = new XmlToCsvConverter();
-        await xmlToCsvConverter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.csv");
+        await converterFacade.ConvertXmlToCsvAsync(
+            @"C:\Users\User\Desktop\input.xml",
+            @"C:\Users\User\Desktop\output.csv"
+        );
         Console.WriteLine("XML to CSV conversion completed.");
-
+        
+        // XML to JSON Conversion
+        await converterFacade.ConvertXmlToJsonAsync(
+            @"C:\Users\User\Desktop\input.xml",
+            @"C:\Users\User\Desktop\output.json"
+        );
+        Console.WriteLine("XML to JSON conversion completed.");
+/*
         // XML to YAML Conversion
         var xmlToYamlConverter = new XmlToYamlConverter();
         await xmlToYamlConverter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.yaml");

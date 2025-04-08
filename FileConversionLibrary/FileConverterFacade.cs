@@ -9,6 +9,8 @@ namespace FileConversionLibrary;
 
 public class FileConverterFacade
 {
+    private readonly IFileReader<XmlData> _xmlReader;
+    private readonly IFileWriter<string> _csvWriter;
     private readonly IFileReader<CsvData> _csvReader;
     private readonly IFileWriter<byte[]> _pdfWriter;
     private readonly IFileWriter<byte[]> _wordWriter;
@@ -25,6 +27,8 @@ public class FileConverterFacade
         IFileWriter<string> yamlWriter,
         IFileWriter<byte[]> pdfWriter,
         IFileWriter<byte[]> wordWriter,
+        IFileReader<XmlData> xmlReader,
+        IFileWriter<string> csvWriter,
         ConverterFactory converterFactory,
         IExceptionHandler exceptionHandler)
     {
@@ -34,11 +38,12 @@ public class FileConverterFacade
         _yamlWriter = yamlWriter;
         _pdfWriter = pdfWriter;
         _wordWriter = wordWriter;
+        _xmlReader = xmlReader;
+        _csvWriter = csvWriter;
         _converterFactory = converterFactory;
         _exceptionHandler = exceptionHandler;
     }
-
-
+    
     public async Task ConvertCsvToJsonAsync(string csvFilePath, string jsonOutputPath)
     {
         try
@@ -145,6 +150,72 @@ public class FileConverterFacade
         {
             _exceptionHandler?.Handle(ex);
             throw new FileConversionException($"Failed to convert {csvFilePath} to {yamlOutputPath}", ex);
+        }
+    }
+    
+    public async Task ConvertXmlToCsvAsync(
+        string xmlFilePath, 
+        string csvOutputPath, 
+        char delimiter = ',',
+        bool includeAttributes = true,
+        bool preserveCData = true,
+        bool includeComments = false)
+    {
+        try
+        {
+            var readerOptions = new Dictionary<string, object>
+            {
+                ["includeAttributes"] = includeAttributes,
+                ["preserveCData"] = preserveCData,
+                ["includeComments"] = includeComments
+            };
+            
+            var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
+            
+            var converterOptions = new Dictionary<string, object>
+            {
+                ["delimiter"] = delimiter,
+                ["quoteValues"] = true
+            };
+        
+            var converter = _converterFactory.GetConverter<XmlData, string>(OutputFormat.Csv);
+            var csv = converter.Convert(xmlData, converterOptions);
+            
+            await _csvWriter.WriteAsync(csvOutputPath, csv);
+        }
+        catch (Exception ex)
+        {
+            _exceptionHandler?.Handle(ex);
+            throw new FileConversionException($"Failed to convert {xmlFilePath} to {csvOutputPath}", ex);
+        }
+    }
+    
+    // Добавьте новый метод:
+
+    public async Task ConvertXmlToJsonAsync(
+        string xmlFilePath, 
+        string jsonOutputPath, 
+        bool preserveStructure = false)
+    {
+        try
+        {
+            var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
+
+            var converterOptions = new Dictionary<string, object>
+            {
+                ["useIndentation"] = true,
+                ["preserveStructure"] = preserveStructure
+            };
+            
+            var converter = _converterFactory.GetConverter<XmlData, string>(OutputFormat.Json);
+            var json = converter.Convert(xmlData, converterOptions);
+            
+            await _jsonWriter.WriteAsync(jsonOutputPath, json);
+        }
+        catch (Exception ex)
+        {
+            _exceptionHandler?.Handle(ex);
+            throw new FileConversionException($"Failed to convert {xmlFilePath} to {jsonOutputPath}", ex);
         }
     }
 }
