@@ -55,6 +55,14 @@ class Program
             @"C:\Users\User\Desktop\output.json"
         );
         Console.WriteLine("XML to JSON conversion completed.");
+        
+        // XML to PDF Conversion
+        await converterFacade.ConvertXmlToPdfAsync(
+            @"C:\Users\User\Desktop\input.xml",
+            @"C:\Users\User\Desktop\catalog_table.pdf"
+        );
+        Console.WriteLine("XML to PDF conversion completed.");
+        
 /*
         // XML to YAML Conversion
         var xmlToYamlConverter = new XmlToYamlConverter();

@@ -24,27 +24,33 @@ public class ConverterFactory
                 return (IConverter<TInput, TOutput>)(object)new CsvToJsonConverter();
             }
         }
-    
+
         if (typeof(TInput) == typeof(CsvData) && typeof(TOutput) == typeof(byte[]) && format == OutputFormat.Pdf)
         {
             return (IConverter<TInput, TOutput>)(object)new CsvToPdfConverter();
         }
-    
+
         if (typeof(TInput) == typeof(CsvData) && typeof(TOutput) == typeof(byte[]) && format == OutputFormat.Word)
         {
             return (IConverter<TInput, TOutput>)(object)new CsvToWordConverter();
         }
-        
+
         if (typeof(TInput) == typeof(XmlData) && typeof(TOutput) == typeof(string) && format == OutputFormat.Csv)
         {
             return (IConverter<TInput, TOutput>)(object)new XmlToCsvConverter();
         }
-        
+
         if (typeof(TInput) == typeof(XmlData) && typeof(TOutput) == typeof(string) && format == OutputFormat.Json)
         {
             return (IConverter<TInput, TOutput>)(object)new XmlToJsonConverter();
         }
-    
-        throw new NotSupportedException($"Converter from {typeof(TInput)} to {typeof(TOutput)} with format {format} is not supported");
+
+        if (typeof(TInput) == typeof(XmlData) && typeof(TOutput) == typeof(byte[]) && format == OutputFormat.Pdf)
+        {
+            return (IConverter<TInput, TOutput>)(object)new XmlToPdfConverter();
+        }
+
+        throw new NotSupportedException(
+            $"Converter from {typeof(TInput)} to {typeof(TOutput)} with format {format} is not supported");
     }
 }

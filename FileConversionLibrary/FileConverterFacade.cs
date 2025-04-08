@@ -4,6 +4,7 @@ using FileConversionLibrary.Exceptions;
 using FileConversionLibrary.Factories;
 using FileConversionLibrary.Interfaces;
 using FileConversionLibrary.Models;
+using iTextSharp.text;
 
 namespace FileConversionLibrary;
 
@@ -43,7 +44,7 @@ public class FileConverterFacade
         _converterFactory = converterFactory;
         _exceptionHandler = exceptionHandler;
     }
-    
+
     public async Task ConvertCsvToJsonAsync(string csvFilePath, string jsonOutputPath)
     {
         try
@@ -152,10 +153,10 @@ public class FileConverterFacade
             throw new FileConversionException($"Failed to convert {csvFilePath} to {yamlOutputPath}", ex);
         }
     }
-    
+
     public async Task ConvertXmlToCsvAsync(
-        string xmlFilePath, 
-        string csvOutputPath, 
+        string xmlFilePath,
+        string csvOutputPath,
         char delimiter = ',',
         bool includeAttributes = true,
         bool preserveCData = true,
@@ -169,18 +170,18 @@ public class FileConverterFacade
                 ["preserveCData"] = preserveCData,
                 ["includeComments"] = includeComments
             };
-            
+
             var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
-            
+
             var converterOptions = new Dictionary<string, object>
             {
                 ["delimiter"] = delimiter,
                 ["quoteValues"] = true
             };
-        
+
             var converter = _converterFactory.GetConverter<XmlData, string>(OutputFormat.Csv);
             var csv = converter.Convert(xmlData, converterOptions);
-            
+
             await _csvWriter.WriteAsync(csvOutputPath, csv);
         }
         catch (Exception ex)
@@ -189,38 +190,71 @@ public class FileConverterFacade
             throw new FileConversionException($"Failed to convert {xmlFilePath} to {csvOutputPath}", ex);
         }
     }
-    
+
     public async Task ConvertXmlToJsonAsync(
-        string xmlFilePath, 
-        string jsonOutputPath, 
+        string xmlFilePath,
+        string jsonOutputPath,
         bool convertValues = true,
         bool removeWhitespace = true)
     {
         try
         {
             var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
-        
+
             if (xmlData.Document == null)
             {
                 throw new InvalidOperationException("XML document could not be loaded properly");
             }
-            
+
             var converterOptions = new Dictionary<string, object>
             {
                 ["useIndentation"] = true,
                 ["convertValues"] = convertValues,
                 ["removeWhitespace"] = removeWhitespace
             };
-            
+
             var converter = _converterFactory.GetConverter<XmlData, string>(OutputFormat.Json);
             var json = converter.Convert(xmlData, converterOptions);
-            
+
             await _jsonWriter.WriteAsync(jsonOutputPath, json);
         }
         catch (Exception ex)
         {
             _exceptionHandler?.Handle(ex);
             throw new FileConversionException($"Failed to convert {xmlFilePath} to {jsonOutputPath}", ex);
+        }
+    }
+
+    public async Task ConvertXmlToPdfAsync(
+        string xmlFilePath,
+        string pdfOutputPath,
+        bool hierarchicalView = false,
+        float fontSize = 10f,
+        bool addBorders = true,
+        bool alternateRowColors = false)
+    {
+        try
+        {
+            var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
+
+            var converterOptions = new Dictionary<string, object>
+            {
+                ["fontSize"] = fontSize,
+                ["addBorders"] = addBorders,
+                ["alternateRowColors"] = alternateRowColors,
+                ["headerBackgroundColor"] = new BaseColor(220, 220, 220),
+                ["hierarchicalView"] = hierarchicalView
+            };
+
+            var converter = _converterFactory.GetConverter<XmlData, byte[]>(OutputFormat.Pdf);
+            var pdfData = converter.Convert(xmlData, converterOptions);
+
+            await _pdfWriter.WriteAsync(pdfOutputPath, pdfData);
+        }
+        catch (Exception ex)
+        {
+            _exceptionHandler?.Handle(ex);
+            throw new FileConversionException($"Failed to convert {xmlFilePath} to {pdfOutputPath}", ex);
         }
     }
 }
