@@ -190,21 +190,26 @@ public class FileConverterFacade
         }
     }
     
-    // Добавьте новый метод:
-
     public async Task ConvertXmlToJsonAsync(
         string xmlFilePath, 
         string jsonOutputPath, 
-        bool preserveStructure = false)
+        bool convertValues = true,
+        bool removeWhitespace = true)
     {
         try
         {
             var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
-
+        
+            if (xmlData.Document == null)
+            {
+                throw new InvalidOperationException("XML document could not be loaded properly");
+            }
+            
             var converterOptions = new Dictionary<string, object>
             {
                 ["useIndentation"] = true,
-                ["preserveStructure"] = preserveStructure
+                ["convertValues"] = convertValues,
+                ["removeWhitespace"] = removeWhitespace
             };
             
             var converter = _converterFactory.GetConverter<XmlData, string>(OutputFormat.Json);

@@ -70,11 +70,6 @@ class Program
         var xmlToWordConverter = new XmlToWordConverter();
         await xmlToWordConverter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.docx");
         Console.WriteLine("XML to Word conversion completed.");
-
-        // XML to JSON Conversion
-        var xmlToJsonConverter = new XmlToJsonConverter();
-        await xmlToJsonConverter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.json");
-        Console.WriteLine("XML to JSON conversion completed.");
 */
     }
 }
