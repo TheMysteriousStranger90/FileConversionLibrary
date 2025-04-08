@@ -257,4 +257,43 @@ public class FileConverterFacade
             throw new FileConversionException($"Failed to convert {xmlFilePath} to {pdfOutputPath}", ex);
         }
     }
+    
+    public async Task ConvertXmlToWordAsync(
+        string xmlFilePath, 
+        string wordOutputPath, 
+        bool useTable = true,
+        bool addHeaderRow = true,
+        bool formatAsHierarchy = false,
+        string fontFamily = "Calibri",
+        int fontSize = 11)
+    {
+        try
+        {
+            var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
+        
+            if (xmlData.Headers == null || xmlData.Rows == null)
+            {
+                throw new InvalidOperationException("XML data could not be loaded properly");
+            }
+            
+            var converterOptions = new Dictionary<string, object>
+            {
+                ["useTable"] = useTable,
+                ["addHeaderRow"] = addHeaderRow,
+                ["fontFamily"] = fontFamily,
+                ["fontSize"] = fontSize,
+                ["formatAsHierarchy"] = formatAsHierarchy
+            };
+
+            var converter = _converterFactory.GetConverter<XmlData, byte[]>(OutputFormat.Word);
+            var wordData = converter.Convert(xmlData, converterOptions);
+            
+            await _wordWriter.WriteAsync(wordOutputPath, wordData);
+        }
+        catch (Exception ex)
+        {
+            _exceptionHandler?.Handle(ex);
+            throw new FileConversionException($"Failed to convert {xmlFilePath} to {wordOutputPath}", ex);
+        }
+    }
 }

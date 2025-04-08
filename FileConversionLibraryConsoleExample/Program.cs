@@ -63,21 +63,24 @@ class Program
         );
         Console.WriteLine("XML to PDF conversion completed.");
         
+        // XML to Word Conversion
+        await converterFacade.ConvertXmlToWordAsync(
+            @"C:\Users\User\Desktop\input.xml",
+            @"C:\Users\User\Desktop\catalog.docx"
+        );
+        Console.WriteLine("XML to Word conversion completed.");
+        
+        await converterFacade.ConvertXmlToWordAsync(
+            @"C:\Users\User\Desktop\input.xml", 
+            @"C:\Users\User\Desktop\catalog_hierarchical.docx",
+            formatAsHierarchy: true
+        );
+        Console.WriteLine("XML to Word hierarchical conversion completed.");
 /*
         // XML to YAML Conversion
         var xmlToYamlConverter = new XmlToYamlConverter();
         await xmlToYamlConverter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.yaml");
         Console.WriteLine("XML to YAML conversion completed.");
-
-        // XML to PDF Conversion
-        var xmlToPdfConverter = new XmlToPdfConverter();
-        await xmlToPdfConverter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.pdf");
-        Console.WriteLine("XML to PDF conversion completed.");
-
-        // XML to Word Conversion
-        var xmlToWordConverter = new XmlToWordConverter();
-        await xmlToWordConverter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.docx");
-        Console.WriteLine("XML to Word conversion completed.");
 */
     }
 }

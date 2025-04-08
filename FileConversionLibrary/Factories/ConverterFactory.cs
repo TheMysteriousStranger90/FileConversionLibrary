@@ -49,6 +49,11 @@ public class ConverterFactory
         {
             return (IConverter<TInput, TOutput>)(object)new XmlToPdfConverter();
         }
+        
+        if (typeof(TInput) == typeof(XmlData) && typeof(TOutput) == typeof(byte[]) && format == OutputFormat.Word)
+        {
+            return (IConverter<TInput, TOutput>)(object)new XmlToWordConverter();
+        }
 
         throw new NotSupportedException(
             $"Converter from {typeof(TInput)} to {typeof(TOutput)} with format {format} is not supported");
