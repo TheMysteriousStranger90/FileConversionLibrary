@@ -1,5 +1,7 @@
 ﻿using FileConversionLibrary;
 
+namespace FileConversionLibraryConsoleExample;
+
 class Program
 {
     static async Task Main(string[] args)
@@ -37,7 +39,7 @@ class Program
         await fileConverter.ConvertCsvToYamlAsync(
             @"C:\Users\User\Desktop\csv_input.csv",
             @"C:\Users\User\Desktop\output1.yaml"
-            );
+        );
         Console.WriteLine("CSV to YAML conversion completed.");
 
 

@@ -5,69 +5,96 @@ This library provides functionality to convert CSV and XML files to various form
 
 ## Usage
 
+### Initializing the FileConverter
+
+To use the library, you need to create an instance of the `FileConverter` class.
+```csharp
+// Create a new instance of the FileConverter
+var fileConverter = new FileConverter();
+```
+
 ### CSV to XML Conversion
 
 ```csharp
-var converter = new CsvToXmlConverter();
-await converter.ConvertAsync(@"C:\Users\User\Desktop\input.csv", @"C:\Users\User\Desktop\output.xml");
+await fileConverter.ConvertCsvToXmlAsync(
+    @"C:\Users\User\Desktop\input.csv",
+    @"C:\Users\User\Desktop\output.xml"
+);
 ```
 
 ### CSV to PDF Conversion
 
 ```csharp
-var converter = new CsvToPdfConverter();
-await converter.ConvertAsync(@"C:\Users\User\Desktop\input.csv", @"C:\Users\User\Desktop\output.pdf");
+await fileConverter.ConvertCsvToPdfAsync(
+    @"C:\Users\User\Desktop\input.csv",
+    @"C:\Users\User\Desktop\output.pdf"
+);
 ```
 
 ### CSV to Word Conversion
 
 ```csharp
-var converter = new CsvToWordConverter();
-await converter.ConvertAsync(@"C:\Users\User\Desktop\input.csv", @"C:\Users\User\Desktop\output.docx");
+await fileConverter.ConvertCsvToWordAsync(
+    @"C:\Users\User\Desktop\input.csv",
+    @"C:\Users\User\Desktop\output.docx"
+);
 ```
 
 ### CSV to YAML Conversion
 
 ```csharp
-var converter = new CsvToYamlConverter();
-await converter.ConvertAsync(@"C:\Users\User\Desktop\input.csv", @"C:\Users\User\Desktop\output.yaml");
+await fileConverter.ConvertCsvToYamlAsync(
+    @"C:\Users\User\Desktop\input.csv",
+    @"C:\Users\User\Desktop\output.yaml"
+);
 ```
 
 ### CSV to JSON Conversion
 
 ```csharp
-var converter = new CsvToJsonConverter();
-await converter.ConvertAsync(@"C:\Users\User\Desktop\input.csv", @"C:\Users\User\Desktop\output.json");
+await fileConverter.ConvertCsvToJsonAsync(
+    @"C:\Users\User\Desktop\input.csv",
+    @"C:\Users\User\Desktop\output.json"
 ```
 
 ### XML to CSV Conversion
 ```csharp
-var converter = new XmlToCsvConverter();
-await converter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.csv");
+await fileConverter.ConvertXmlToCsvAsync(
+    @"C:\Users\User\Desktop\input.xml",
+    @"C:\Users\User\Desktop\output.csv"
+);
 ```
 
 ### XML to PDF Conversion
 ```csharp
-var converter = new XmlToPdfConverter();
-await converter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.pdf");
+await fileConverter.ConvertXmlToPdfAsync(
+    @"C:\Users\User\Desktop\input.xml",
+    @"C:\Users\User\Desktop\output.pdf"
+);
 ```
 
 ### XML to Word Conversion
 ```csharp
-var converter = new XmlToWordConverter();
-await converter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.docx");
+await fileConverter.ConvertXmlToWordAsync(
+    @"C:\Users\User\Desktop\input.xml",
+    @"C:\Users\User\Desktop\output.docx"
+);
 ```
 
 ### XML to YAML Conversion
 ```csharp
-var converter = new XmlToYamlConverter();
-await converter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.yaml");
+await fileConverter.ConvertXmlToYamlAsync(
+    @"C:\Users\User\Desktop\input.xml",
+    @"C:\Users\User\Desktop\output.yaml"
+);
 ```
 
 ### XML to JSON Conversion
 ```csharp
-var converter = new XmlToJsonConverter();
-await converter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.json");
+await fileConverter.ConvertXmlToJsonAsync(
+    @"C:\Users\User\Desktop\input.xml",
+    @"C:\Users\User\Desktop\output.json"
+);
 ```
 
 ## Notes

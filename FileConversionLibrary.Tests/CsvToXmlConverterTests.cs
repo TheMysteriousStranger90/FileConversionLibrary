@@ -1,71 +1,119 @@
-﻿using NUnit.Framework;
-using System.IO;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
+using FileConversionLibrary.Converters;
+using FileConversionLibrary.Models;
 
-namespace FileConversionLibrary.Tests;
-
-[TestFixture]
-public class CsvToXmlConverterTests
+namespace FileConversionLibrary.Tests
 {
-    private CsvToXmlConverter _converter;
-
-    [SetUp]
-    public void SetUp()
+    public class CsvToXmlConverterTests
     {
-        _converter = new CsvToXmlConverter();
-    }
+        private CsvToXmlConverter _converter;
 
-    [Test]
-    public async Task ConvertAsync_GivenValidCsvFile_CreatesValidXmlFile()
-    {
-        // Arrange
-        var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-        var xmlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
+        [SetUp]
+        public void SetUp()
+        {
+            _converter = new CsvToXmlConverter();
+        }
 
-        await File.WriteAllTextAsync(csvFilePath, "Name,Age\nJohn,30\nJane,25");
+        [Test]
+        public void Convert_GivenValidCsvData_ReturnsValidXml()
+        {
+            // Arrange
+            var csvData = new CsvData
+            {
+                Headers = new[] { "Name", "Age" },
+                Rows = new List<string[]>
+                {
+                    new[] { "John", "30" },
+                    new[] { "Jane", "25" }
+                }
+            };
 
-        // Act
-        await _converter.ConvertAsync(csvFilePath, xmlOutputPath);
+            // Act
+            var result = _converter.Convert(csvData);
 
-        // Assert
-        Assert.IsTrue(File.Exists(xmlOutputPath));
-        var doc = XDocument.Load(xmlOutputPath);
-        Assert.IsNotNull(doc.Root);
-    }
+            // Assert
+            Assert.IsNotNull(result);
+            
+            // Verify the XML can be parsed
+            var doc = XDocument.Parse(result);
+            Assert.IsNotNull(doc.Root);
+            
+            // Verify structure
+            var rows = doc.Root.Elements();
+            Assert.AreEqual(2, rows.Count());
+            
+            // Check first row content
+            var firstRow = rows.First();
+            Assert.AreEqual("30", firstRow.Element("Age").Value);
+            Assert.AreEqual("John", firstRow.Element("Name").Value);
+        }
+        
+        [Test]
+        public void Convert_WithElementsFormat_CreatesCorrectStructure()
+        {
+            // Arrange
+            var csvData = new CsvData
+            {
+                Headers = new[] { "Name", "Age" },
+                Rows = new List<string[]>
+                {
+                    new[] { "John", "30" }
+                }
+            };
+            
+            var options = new Dictionary<string, object>
+            {
+                ["format"] = CsvToXmlConverter.XmlOutputFormat.Elements,
+                ["useCData"] = false
+            };
 
-    [Test]
-    public async Task ConvertAsync_GivenCsvFileWithDifferentDelimiter_CreatesValidXmlFile()
-    {
-        // Arrange
-        var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-        var xmlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
+            // Act
+            var result = _converter.Convert(csvData, options);
 
-        await File.WriteAllTextAsync(csvFilePath, "Name;Age\nJohn;30\nJane;25");
+            // Assert
+            var doc = XDocument.Parse(result);
+            var firstRow = doc.Root.Elements().First();
+            
+            // Verify elements format (nested elements)
+            Assert.IsNull(firstRow.Attribute("Name"));
+            Assert.IsNotNull(firstRow.Element("Name"));
+        }
+        
+        [Test]
+        public void Convert_WithAttributesFormat_CreatesCorrectStructure()
+        {
+            // Arrange
+            var csvData = new CsvData
+            {
+                Headers = new[] { "Name", "Age" },
+                Rows = new List<string[]>
+                {
+                    new[] { "John", "30" }
+                }
+            };
+            
+            var options = new Dictionary<string, object>
+            {
+                ["format"] = CsvToXmlConverter.XmlOutputFormat.Attributes
+            };
 
-        // Act
-        await _converter.ConvertAsync(csvFilePath, xmlOutputPath, ';');
+            // Act
+            var result = _converter.Convert(csvData, options);
 
-        // Assert
-        Assert.IsTrue(File.Exists(xmlOutputPath));
-        var doc = XDocument.Load(xmlOutputPath);
-        Assert.IsNotNull(doc.Root);
-    }
-
-    [Test]
-    public async Task ConvertAsync_GivenCsvFileWithQuotedFields_CreatesValidXmlFile()
-    {
-        // Arrange
-        var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-        var xmlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
-
-        await File.WriteAllTextAsync(csvFilePath, "\"Name\",\"Age\"\n\"John\",\"30\"\n\"Jane\",\"25\"");
-
-        // Act
-        await _converter.ConvertAsync(csvFilePath, xmlOutputPath);
-
-        // Assert
-        Assert.IsTrue(File.Exists(xmlOutputPath));
-        var doc = XDocument.Load(xmlOutputPath);
-        Assert.IsNotNull(doc.Root);
+            // Assert
+            var doc = XDocument.Parse(result);
+            var firstRow = doc.Root.Elements().First();
+            
+            // Verify attributes format
+            Assert.IsNotNull(firstRow.Attribute("Name"));
+            Assert.AreEqual("John", firstRow.Attribute("Name").Value);
+        }
+        
+        [Test]
+        public void Convert_WithNullInput_ThrowsArgumentException()
+        {
+            // Arrange & Act & Assert
+            Assert.Throws<ArgumentException>(() => _converter.Convert(null));
+        }
     }
 }

@@ -1,46 +1,62 @@
-﻿namespace FileConversionLibrary.Tests;
+﻿using FileConversionLibrary.Converters;
+using FileConversionLibrary.Models;
+using YamlDotNet.RepresentationModel;
 
-[TestFixture]
-public class CsvToYamlConverterTests
+namespace FileConversionLibrary.Tests
 {
-    private CsvToYamlConverter _converter;
-
-    [SetUp]
-    public void SetUp()
+    public class CsvToYamlConverterTests
     {
-        _converter = new CsvToYamlConverter();
-    }
+        private CsvToYamlConverter _converter;
 
-    [Test]
-    public async Task ConvertAsync_GivenValidCsvFile_CreatesYamlFile()
-    {
-        // Arrange
-        var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-        var yamlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.yaml");
+        [SetUp]
+        public void SetUp()
+        {
+            _converter = new CsvToYamlConverter();
+        }
 
-        // Create a sample CSV file
-        await File.WriteAllTextAsync(csvFilePath, "Name,Age\nJohn,30\nJane,25");
+        [Test]
+        public void Convert_GivenValidCsvData_ReturnsValidYaml()
+        {
+            // Arrange
+            var csvData = new CsvData
+            {
+                Headers = new[] { "Name", "Age" },
+                Rows = new List<string[]>
+                {
+                    new[] { "John", "30" },
+                    new[] { "Jane", "25" }
+                }
+            };
 
-        // Act
-        await _converter.ConvertAsync(csvFilePath, yamlOutputPath);
+            // Act
+            var result = _converter.Convert(csvData);
 
-        // Assert
-        Assert.IsTrue(File.Exists(yamlOutputPath));
-    }
-
-    [Test]
-    public async Task ConvertAsync_GivenCsvFileWithDifferentDelimiter_CreatesYamlFile()
-    {
-        // Arrange
-        var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-        var yamlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.yaml");
+            // Assert
+            Assert.IsNotNull(result);
+            
+            // Verify the YAML can be parsed
+            using var stringReader = new StringReader(result);
+            var yamlStream = new YamlStream();
+            yamlStream.Load(stringReader);
+            
+            var document = yamlStream.Documents[0];
+            var rootNode = document.RootNode as YamlSequenceNode;
+            
+            Assert.IsNotNull(rootNode);
+            Assert.AreEqual(2, rootNode.Children.Count);
+            
+            // Verify first item structure
+            var firstItem = rootNode.Children[0] as YamlMappingNode;
+            Assert.IsTrue(firstItem.Children.ContainsKey(new YamlScalarNode("Name")));
+            Assert.AreEqual("John", 
+                ((YamlScalarNode)firstItem.Children[new YamlScalarNode("Name")]).Value);
+        }
         
-        await File.WriteAllTextAsync(csvFilePath, "Name;Age\nJohn;30\nJane;25");
-
-        // Act
-        await _converter.ConvertAsync(csvFilePath, yamlOutputPath, ';');
-
-        // Assert
-        Assert.IsTrue(File.Exists(yamlOutputPath));
+        [Test]
+        public void Convert_WithNullInput_ThrowsArgumentException()
+        {
+            // Arrange & Act & Assert
+            Assert.Throws<ArgumentException>(() => _converter.Convert(null));
+        }
     }
 }

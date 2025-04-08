@@ -1,92 +1,68 @@
-﻿namespace FileConversionLibrary.Tests;
+﻿using System.Xml.Linq;
+using FileConversionLibrary.Converters;
+using FileConversionLibrary.Models;
+using YamlDotNet.RepresentationModel;
 
-[TestFixture]
-public class XmlToYamlConverterTests
+namespace FileConversionLibrary.Tests
 {
-    private XmlToYamlConverter _converter;
-
-    [SetUp]
-    public void SetUp()
+    [TestFixture]
+    public class XmlToYamlConverterTests
     {
-        _converter = new XmlToYamlConverter();
-    }
+        private XmlToYamlConverter _converter;
 
-    [Test]
-    public async Task ConvertAsync_GivenValidXmlFile_CreatesYamlFile()
-    {
-        // Arrange
-        var xmlFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
-        var yamlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.yaml");
+        [SetUp]
+        public void SetUp()
+        {
+            _converter = new XmlToYamlConverter();
+        }
 
-        // Create a sample XML file
-        var xmlContent = @"<root>
-                                <element>
-                                    <Name>John</Name>
-                                    <Age>30</Age>
-                                </element>
-                                <element>
-                                    <Name>Jane</Name>
-                                    <Age>25</Age>
-                                </element>
-                               </root>";
-        await File.WriteAllTextAsync(xmlFilePath, xmlContent);
+        [Test]
+        public void Convert_GivenValidXmlData_ReturnsValidYaml()
+        {
+            // Arrange
+            var xmlDoc = XDocument.Parse(@"<root>
+                                            <element>
+                                                <Name>John</Name>
+                                                <Age>30</Age>
+                                            </element>
+                                            <element>
+                                                <Name>Jane</Name>
+                                                <Age>25</Age>
+                                            </element>
+                                           </root>");
+            
+            var xmlData = new XmlData
+            {
+                Document = xmlDoc,
+                Headers = new[] { "Name", "Age" },
+                Rows = new List<string[]>
+                {
+                    new[] { "John", "30" },
+                    new[] { "Jane", "25" }
+                }
+            };
 
-        // Act
-        await _converter.ConvertAsync(xmlFilePath, yamlOutputPath);
+            // Act
+            var result = _converter.Convert(xmlData);
 
-        // Assert
-        Assert.IsTrue(File.Exists(yamlOutputPath));
-    }
-
-    [Test]
-    public async Task ConvertAsync_GivenXmlFileWithNestedElements_CreatesYamlFile()
-    {
-        // Arrange
-        var xmlFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test_nested_elements.xml");
-        var yamlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.yaml");
-
-        // Create a sample XML file with nested elements
-        var xmlContent = @"<root>
-                                <element>
-                                    <Name>John</Name>
-                                    <Details>
-                                        <Age>30</Age>
-                                    </Details>
-                                </element>
-                                <element>
-                                    <Name>Jane</Name>
-                                    <Details>
-                                        <Age>25</Age>
-                                    </Details>
-                                </element>
-                               </root>";
-        await File.WriteAllTextAsync(xmlFilePath, xmlContent);
-
-        // Act
-        await _converter.ConvertAsync(xmlFilePath, yamlOutputPath);
-
-        // Assert
-        Assert.IsTrue(File.Exists(yamlOutputPath));
-    }
-
-    [Test]
-    public async Task ConvertAsync_GivenXmlFileWithAttributes_CreatesYamlFile()
-    {
-        // Arrange
-        var xmlFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test_attributes.xml");
-        var yamlOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.yaml");
-
-        // Create a sample XML file with attributes
-        var xmlContent = @"<root>
-                                <element Name='John' Age='30' />
-                                <element Name='Jane' Age='25' />
-                               </root>";
-        await File.WriteAllTextAsync(xmlFilePath, xmlContent);
-
-        // Act
-        await _converter.ConvertAsync(xmlFilePath, yamlOutputPath);
-
-        // Assert
-        Assert.IsTrue(File.Exists(yamlOutputPath));
+            // Assert
+            Assert.IsNotNull(result);
+            
+            // Verify the YAML can be parsed
+            using var reader = new StringReader(result);
+            var yamlStream = new YamlStream();
+            yamlStream.Load(reader);
+            
+            // At least one document should be present
+            Assert.GreaterOrEqual(yamlStream.Documents.Count, 1);
+            Assert.IsNotNull(yamlStream.Documents[0].RootNode);
+        }
+        
+        [Test]
+        public void Convert_WithNullInput_ThrowsArgumentException()
+        {
+            // Arrange & Act & Assert
+            Assert.Throws<ArgumentException>(() => _converter.Convert(null));
+        }
     }
 }

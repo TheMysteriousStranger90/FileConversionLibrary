@@ -1,51 +1,109 @@
-﻿using Newtonsoft.Json;
+﻿using FileConversionLibrary.Converters;
+using FileConversionLibrary.Models;
+using Newtonsoft.Json.Linq;
 
-namespace FileConversionLibrary.Tests;
-
-[TestFixture]
-public class CsvToJsonConverterTests
+namespace FileConversionLibrary.Tests
 {
-    private CsvToJsonConverter _converter;
-
-    [SetUp]
-    public void SetUp()
+    public class CsvToJsonConverterTests
     {
-        _converter = new CsvToJsonConverter();
-    }
+        private CsvToJsonConverter _converter;
 
-    [Test]
-    public async Task ConvertAsync_GivenValidCsvFile_CreatesValidJsonFile()
-    {
-        // Arrange
-        var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-        var jsonOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.json");
+        [SetUp]
+        public void SetUp()
+        {
+            _converter = new CsvToJsonConverter();
+        }
+
+        [Test]
+        public void Convert_GivenValidCsvData_ReturnsValidJson()
+        {
+            // Arrange
+            var csvData = new CsvData
+            {
+                Headers = new[] { "Name", "Age" },
+                Rows = new List<string[]>
+                {
+                    new[] { "John", "30" },
+                    new[] { "Jane", "25" }
+                }
+            };
+
+            // Act
+            var result = _converter.Convert(csvData);
+
+            // Assert
+            Assert.IsNotNull(result);
+            
+            // Verify the JSON can be parsed
+            var jsonArray = JArray.Parse(result);
+            Assert.AreEqual(2, jsonArray.Count);
+            
+            // Verify the structure of the first object
+            var firstObj = jsonArray[0];
+            Assert.AreEqual("John", firstObj["Name"].ToString());
+            Assert.AreEqual(30, firstObj["Age"].Value<int>());
+            
+            // Verify the structure of the second object
+            var secondObj = jsonArray[1];
+            Assert.AreEqual("Jane", secondObj["Name"].ToString());
+            Assert.AreEqual(25, secondObj["Age"].Value<int>());
+        }
         
-        await File.WriteAllTextAsync(csvFilePath, "Name,Age\nJohn,30\nJane,25");
+        [Test]
+        public void Convert_WithConvertValuesFalse_KeepsStrings()
+        {
+            // Arrange
+            var csvData = new CsvData
+            {
+                Headers = new[] { "Name", "Age" },
+                Rows = new List<string[]>
+                {
+                    new[] { "John", "30" }
+                }
+            };
+            
+            var options = new Dictionary<string, object>
+            {
+                ["convertValues"] = false
+            };
 
-        // Act
-        await _converter.ConvertAsync(csvFilePath, jsonOutputPath);
+            // Act
+            var result = _converter.Convert(csvData, options);
 
-        // Assert
-        Assert.IsTrue(File.Exists(jsonOutputPath));
-        var json = await File.ReadAllTextAsync(jsonOutputPath);
-        Assert.IsNotNull(JsonConvert.DeserializeObject(json));
-    }
-
-    [Test]
-    public async Task ConvertAsync_GivenCsvFileWithDifferentDelimiter_CreatesValidJsonFile()
-    {
-        // Arrange
-        var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-        var jsonOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.json");
+            // Assert
+            var jsonObj = JArray.Parse(result)[0];
+            Assert.AreEqual("30", jsonObj["Age"].ToString());  // Should remain a string
+        }
         
-        await File.WriteAllTextAsync(csvFilePath, "Name;Age\nJohn;30\nJane;25");
+        [Test]
+        public void Convert_WithDifferentDataTypes_ConvertsCorrectly()
+        {
+            // Arrange
+            var csvData = new CsvData
+            {
+                Headers = new[] { "String", "Integer", "Decimal", "Boolean" },
+                Rows = new List<string[]>
+                {
+                    new[] { "text", "42", "3.14", "true" }
+                }
+            };
 
-        // Act
-        await _converter.ConvertAsync(csvFilePath, jsonOutputPath, ';');
+            // Act
+            var result = _converter.Convert(csvData);
 
-        // Assert
-        Assert.IsTrue(File.Exists(jsonOutputPath));
-        var json = await File.ReadAllTextAsync(jsonOutputPath);
-        Assert.IsNotNull(JsonConvert.DeserializeObject(json));
+            // Assert
+            var jsonObj = JArray.Parse(result)[0];
+            Assert.AreEqual("text", jsonObj["String"].ToString());
+            Assert.AreEqual(42, jsonObj["Integer"].Value<int>());
+            Assert.AreEqual(3.14, jsonObj["Decimal"].Value<double>());
+            Assert.IsTrue(jsonObj["Boolean"].Value<bool>());
+        }
+        
+        [Test]
+        public void Convert_WithNullInput_ThrowsArgumentException()
+        {
+            // Arrange & Act & Assert
+            Assert.Throws<ArgumentException>(() => _converter.Convert(null));
+        }
     }
 }

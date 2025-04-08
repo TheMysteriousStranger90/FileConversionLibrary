@@ -1,45 +1,92 @@
-﻿namespace FileConversionLibrary.Tests;
+﻿using FileConversionLibrary.Converters;
+using FileConversionLibrary.Models;
 
-[TestFixture]
-public class CsvToWordConverterTests
+namespace FileConversionLibrary.Tests
 {
-    private CsvToWordConverter _converter;
-
-    [SetUp]
-    public void SetUp()
+    public class CsvToWordConverterTests
     {
-        _converter = new CsvToWordConverter();
-    }
+        private CsvToWordConverter _converter;
 
-    [Test]
-    public async Task ConvertAsync_GivenValidCsvFile_CreatesWordFile()
-    {
-        // Arrange
-        var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-        var wordOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.docx");
+        [SetUp]
+        public void SetUp()
+        {
+            _converter = new CsvToWordConverter();
+        }
+
+        [Test]
+        public void Convert_GivenValidCsvData_ReturnsWordBytes()
+        {
+            // Arrange
+            var csvData = new CsvData
+            {
+                Headers = new[] { "Name", "Age" },
+                Rows = new List<string[]>
+                {
+                    new[] { "John", "30" },
+                    new[] { "Jane", "25" }
+                }
+            };
+
+            // Act
+            var result = _converter.Convert(csvData);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<byte[]>(result);
+            Assert.Greater(result.Length, 0);
+            
+            // Check for DOCX file signature (PK ZIP signature)
+            byte[] docxSignature = { 0x50, 0x4B, 0x03, 0x04 };
+            Assert.IsTrue(StartsWithSequence(result, docxSignature));
+        }
         
-        await File.WriteAllTextAsync(csvFilePath, "Name,Age\nJohn,30\nJane,25");
+        [Test]
+        public void Convert_WithCustomOptions_ReturnsWordBytes()
+        {
+            // Arrange
+            var csvData = new CsvData
+            {
+                Headers = new[] { "Name", "Age" },
+                Rows = new List<string[]>
+                {
+                    new[] { "John", "30" }
+                }
+            };
+            
+            var options = new Dictionary<string, object>
+            {
+                ["useTable"] = false,
+                ["fontFamily"] = "Arial"
+            };
 
-        // Act
-        await _converter.ConvertAsync(csvFilePath, wordOutputPath);
+            // Act
+            var result = _converter.Convert(csvData, options);
 
-        // Assert
-        Assert.IsTrue(File.Exists(wordOutputPath));
-    }
-
-    [Test]
-    public async Task ConvertAsync_GivenCsvFileWithDifferentDelimiter_CreatesWordFile()
-    {
-        // Arrange
-        var csvFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.csv");
-        var wordOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.docx");
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.Greater(result.Length, 0);
+        }
         
-        await File.WriteAllTextAsync(csvFilePath, "Name;Age\nJohn;30\nJane;25");
-
-        // Act
-        await _converter.ConvertAsync(csvFilePath, wordOutputPath, ';');
-
-        // Assert
-        Assert.IsTrue(File.Exists(wordOutputPath));
+        [Test]
+        public void Convert_WithNullInput_ThrowsArgumentException()
+        {
+            // Arrange & Act & Assert
+            Assert.Throws<ArgumentException>(() => _converter.Convert(null));
+        }
+        
+        // Helper method to check if a byte array starts with a sequence
+        private bool StartsWithSequence(byte[] data, byte[] sequence)
+        {
+            if (data.Length < sequence.Length)
+                return false;
+                
+            for (int i = 0; i < sequence.Length; i++)
+            {
+                if (data[i] != sequence[i])
+                    return false;
+            }
+            
+            return true;
+        }
     }
 }
