@@ -4,83 +4,76 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        var serviceLocator = new FileConverterServiceLocator();
-        var converterFacade = serviceLocator.GetFileConverterFacade();
-        /*
+        var fileConverter = new FileConverter();
+
         // CSV to PDF Conversion
-        await converterFacade.ConvertCsvToPdfAsync(
-            @"C:\Users\User\Desktop\sample.csv",
-            @"C:\Users\User\Desktop\output.pdf"
+        await fileConverter.ConvertCsvToPdfAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.pdf"
         );
         Console.WriteLine("CSV to PDF conversion completed.");
-        
+
         // CSV to JSON Conversion
-        await converterFacade.ConvertCsvToJsonAsync(
-            @"C:\Users\User\Desktop\sample.csv",
-            @"C:\Users\User\Desktop\output.json"
+        await fileConverter.ConvertCsvToJsonAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.json"
         );
         Console.WriteLine("CSV to JSON conversion completed.");
-        
+
         // CSV to Word Conversion
-        await converterFacade.ConvertCsvToWordAsync(
-            @"C:\Users\User\Desktop\sample.csv",
-            @"C:\Users\User\Desktop\output.docx"
+        await fileConverter.ConvertCsvToWordAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.docx"
         );
         Console.WriteLine("CSV to Word conversion completed.");
-        
+
         // CSV to XML Conversion
-        await converterFacade.ConvertCsvToXmlAsync(
-            csvFilePath: @"C:\Users\User\Desktop\sample.csv",
-            xmlOutputPath: @"C:\Users\User\Desktop\output.xml");
+        await fileConverter.ConvertCsvToXmlAsync(
+            csvFilePath: @"C:\Users\User\Desktop\csv_input.csv",
+            xmlOutputPath: @"C:\Users\User\Desktop\output1.xml");
         Console.WriteLine("CSV to XML conversion completed.");
-        
+
         // CSV to YAML Conversion
-        await converterFacade.ConvertCsvToYamlAsync(
-            @"C:\Users\User\Desktop\sample.csv",
-            @"C:\Users\User\Desktop\output.yaml"
+        await fileConverter.ConvertCsvToYamlAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.yaml"
             );
         Console.WriteLine("CSV to YAML conversion completed.");
-        */
-        
+
+
         // XML to CSV Conversion
-        await converterFacade.ConvertXmlToCsvAsync(
-            @"C:\Users\User\Desktop\input.xml",
-            @"C:\Users\User\Desktop\output.csv"
+        await fileConverter.ConvertXmlToCsvAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.csv"
         );
         Console.WriteLine("XML to CSV conversion completed.");
-        
+
         // XML to JSON Conversion
-        await converterFacade.ConvertXmlToJsonAsync(
-            @"C:\Users\User\Desktop\input.xml",
-            @"C:\Users\User\Desktop\output.json"
+        await fileConverter.ConvertXmlToJsonAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.json"
         );
         Console.WriteLine("XML to JSON conversion completed.");
-        
+
         // XML to PDF Conversion
-        await converterFacade.ConvertXmlToPdfAsync(
-            @"C:\Users\User\Desktop\input.xml",
-            @"C:\Users\User\Desktop\catalog_table.pdf"
+        await fileConverter.ConvertXmlToPdfAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.pdf"
         );
         Console.WriteLine("XML to PDF conversion completed.");
-        
+
         // XML to Word Conversion
-        await converterFacade.ConvertXmlToWordAsync(
-            @"C:\Users\User\Desktop\input.xml",
-            @"C:\Users\User\Desktop\catalog.docx"
+        await fileConverter.ConvertXmlToWordAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.docx"
         );
         Console.WriteLine("XML to Word conversion completed.");
-        
-        await converterFacade.ConvertXmlToWordAsync(
-            @"C:\Users\User\Desktop\input.xml", 
-            @"C:\Users\User\Desktop\catalog_hierarchical.docx",
-            formatAsHierarchy: true
-        );
-        Console.WriteLine("XML to Word hierarchical conversion completed.");
-/*
+
         // XML to YAML Conversion
-        var xmlToYamlConverter = new XmlToYamlConverter();
-        await xmlToYamlConverter.ConvertAsync(@"C:\Users\User\Desktop\input.xml", @"C:\Users\User\Desktop\output.yaml");
+        await fileConverter.ConvertXmlToYamlAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.yaml"
+        );
         Console.WriteLine("XML to YAML conversion completed.");
-*/
     }
 }

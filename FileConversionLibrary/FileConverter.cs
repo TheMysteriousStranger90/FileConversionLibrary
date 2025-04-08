@@ -4,24 +4,42 @@ using FileConversionLibrary.Exceptions;
 using FileConversionLibrary.Factories;
 using FileConversionLibrary.Interfaces;
 using FileConversionLibrary.Models;
+using FileConversionLibrary.Readers;
+using FileConversionLibrary.Writers;
 using iTextSharp.text;
 
 namespace FileConversionLibrary;
 
-public class FileConverterFacade
+public class FileConverter
 {
+    private readonly IExceptionHandler _exceptionHandler;
     private readonly IFileReader<XmlData> _xmlReader;
     private readonly IFileWriter<string> _csvWriter;
     private readonly IFileReader<CsvData> _csvReader;
-    private readonly IFileWriter<byte[]> _pdfWriter;
-    private readonly IFileWriter<byte[]> _wordWriter;
     private readonly IFileWriter<string> _jsonWriter;
     private readonly IFileWriter<string> _xmlWriter;
     private readonly IFileWriter<string> _yamlWriter;
+    private readonly IFileWriter<byte[]> _pdfWriter;
+    private readonly IFileWriter<byte[]> _wordWriter;
     private readonly ConverterFactory _converterFactory;
-    private readonly IExceptionHandler _exceptionHandler;
 
-    public FileConverterFacade(
+    private static FileConverter _instance;
+
+    public FileConverter()
+    {
+        _exceptionHandler = new ConsoleExceptionHandler();
+        _csvReader = new CsvFileReader(_exceptionHandler);
+        _jsonWriter = new JsonFileWriter(_exceptionHandler);
+        _xmlWriter = new XmlFileWriter(_exceptionHandler);
+        _yamlWriter = new YamlFileWriter(_exceptionHandler);
+        _pdfWriter = new PdfFileWriter(_exceptionHandler);
+        _wordWriter = new WordFileWriter(_exceptionHandler);
+        _xmlReader = new XmlFileReader(_exceptionHandler);
+        _csvWriter = new CsvFileWriter(_exceptionHandler);
+        _converterFactory = new ConverterFactory();
+    }
+
+    public FileConverter(
         IFileReader<CsvData> csvReader,
         IFileWriter<string> jsonWriter,
         IFileWriter<string> xmlWriter,
@@ -43,6 +61,11 @@ public class FileConverterFacade
         _csvWriter = csvWriter;
         _converterFactory = converterFactory;
         _exceptionHandler = exceptionHandler;
+    }
+
+    public static FileConverter GetInstance()
+    {
+        return _instance ??= new FileConverter();
     }
 
     public async Task ConvertCsvToJsonAsync(string csvFilePath, string jsonOutputPath)
@@ -257,10 +280,10 @@ public class FileConverterFacade
             throw new FileConversionException($"Failed to convert {xmlFilePath} to {pdfOutputPath}", ex);
         }
     }
-    
+
     public async Task ConvertXmlToWordAsync(
-        string xmlFilePath, 
-        string wordOutputPath, 
+        string xmlFilePath,
+        string wordOutputPath,
         bool useTable = true,
         bool addHeaderRow = true,
         bool formatAsHierarchy = false,
@@ -270,12 +293,12 @@ public class FileConverterFacade
         try
         {
             var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
-        
+
             if (xmlData.Headers == null || xmlData.Rows == null)
             {
                 throw new InvalidOperationException("XML data could not be loaded properly");
             }
-            
+
             var converterOptions = new Dictionary<string, object>
             {
                 ["useTable"] = useTable,
@@ -287,13 +310,48 @@ public class FileConverterFacade
 
             var converter = _converterFactory.GetConverter<XmlData, byte[]>(OutputFormat.Word);
             var wordData = converter.Convert(xmlData, converterOptions);
-            
+
             await _wordWriter.WriteAsync(wordOutputPath, wordData);
         }
         catch (Exception ex)
         {
             _exceptionHandler?.Handle(ex);
             throw new FileConversionException($"Failed to convert {xmlFilePath} to {wordOutputPath}", ex);
+        }
+    }
+
+    public async Task ConvertXmlToYamlAsync(
+        string xmlFilePath,
+        string yamlOutputPath,
+        bool useCamelCase = false,
+        bool convertValues = true,
+        bool keepStringsForNumbers = false)
+    {
+        try
+        {
+            var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
+
+            if (xmlData.Document == null)
+            {
+                throw new InvalidOperationException("XML document could not be loaded properly");
+            }
+
+            var converterOptions = new Dictionary<string, object>
+            {
+                ["useCamelCase"] = useCamelCase,
+                ["convertValues"] = convertValues,
+                ["keepStringsForNumbers"] = keepStringsForNumbers
+            };
+
+            var converter = _converterFactory.GetConverter<XmlData, string>(OutputFormat.Yaml);
+            var yaml = converter.Convert(xmlData, converterOptions);
+
+            await _yamlWriter.WriteAsync(yamlOutputPath, yaml);
+        }
+        catch (Exception ex)
+        {
+            _exceptionHandler?.Handle(ex);
+            throw new FileConversionException($"Failed to convert {xmlFilePath} to {yamlOutputPath}", ex);
         }
     }
 }

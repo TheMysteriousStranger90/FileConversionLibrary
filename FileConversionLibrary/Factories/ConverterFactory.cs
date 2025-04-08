@@ -54,6 +54,11 @@ public class ConverterFactory
         {
             return (IConverter<TInput, TOutput>)(object)new XmlToWordConverter();
         }
+        
+        if (typeof(TInput) == typeof(XmlData) && typeof(TOutput) == typeof(string) && format == OutputFormat.Yaml)
+        {
+            return (IConverter<TInput, TOutput>)(object)new XmlToYamlConverter();
+        }
 
         throw new NotSupportedException(
             $"Converter from {typeof(TInput)} to {typeof(TOutput)} with format {format} is not supported");
