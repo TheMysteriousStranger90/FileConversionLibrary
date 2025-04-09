@@ -1,92 +1,172 @@
-﻿namespace FileConversionLibrary.Tests;
+﻿using System.Xml.Linq;
+using FileConversionLibrary.Converters;
+using FileConversionLibrary.Models;
 
-[TestFixture]
-public class XmlToWordConverterTests
+namespace FileConversionLibrary.Tests
 {
-    private XmlToWordConverter _converter;
-
-    [SetUp]
-    public void SetUp()
+    [TestFixture]
+    public class XmlToWordConverterTests
     {
-        _converter = new XmlToWordConverter();
-    }
+        private XmlToWordConverter _converter;
 
-    [Test]
-    public async Task ConvertAsync_GivenValidXmlFile_CreatesWordFile()
-    {
-        // Arrange
-        var xmlFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.xml");
-        var wordOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.docx");
+        [SetUp]
+        public void SetUp()
+        {
+            _converter = new XmlToWordConverter();
+        }
 
-        // Create a sample XML file
-        var xmlContent = @"<root>
-                                <element>
-                                    <Name>John</Name>
-                                    <Age>30</Age>
-                                </element>
-                                <element>
-                                    <Name>Jane</Name>
-                                    <Age>25</Age>
-                                </element>
-                               </root>";
-        await File.WriteAllTextAsync(xmlFilePath, xmlContent);
+        [Test]
+        public void Convert_GivenValidXmlData_ReturnsWordBytes()
+        {
+            // Arrange
+            var xmlDoc = XDocument.Parse(@"<root>
+                                            <element>
+                                                <Name>John</Name>
+                                                <Age>30</Age>
+                                            </element>
+                                            <element>
+                                                <Name>Jane</Name>
+                                                <Age>25</Age>
+                                            </element>
+                                           </root>");
+            
+            var xmlData = new XmlData
+            {
+                Document = xmlDoc,
+                Headers = new[] { "Name", "Age" },
+                Rows = new List<string[]>
+                {
+                    new[] { "John", "30" },
+                    new[] { "Jane", "25" }
+                }
+            };
 
-        // Act
-        await _converter.ConvertAsync(xmlFilePath, wordOutputPath);
+            // Act
+            var result = _converter.Convert(xmlData);
 
-        // Assert
-        Assert.IsTrue(File.Exists(wordOutputPath));
-    }
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<byte[]>(result);
+            Assert.Greater(result.Length, 0);
+            
+            // Check for DOCX file signature (PK ZIP signature)
+            byte[] docxSignature = { 0x50, 0x4B, 0x03, 0x04 };
+            for (int i = 0; i < docxSignature.Length; i++)
+            {
+                Assert.AreEqual(docxSignature[i], result[i]);
+            }
+        }
 
-    [Test]
-    public async Task ConvertAsync_GivenXmlFileWithNestedElements_CreatesWordFile()
-    {
-        // Arrange
-        var xmlFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test_nested_elements.xml");
-        var wordOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.docx");
+        [Test]
+        public void Convert_WithoutTable_ReturnsWordDocument()
+        {
+            // Arrange
+            var xmlDoc = XDocument.Parse(@"<root>
+                                            <element>
+                                                <Name>John</Name>
+                                                <Age>30</Age>
+                                            </element>
+                                           </root>");
+            
+            var xmlData = new XmlData
+            {
+                Document = xmlDoc,
+                Headers = new[] { "Name", "Age" },
+                Rows = new List<string[]>
+                {
+                    new[] { "John", "30" }
+                }
+            };
 
-        // Create a sample XML file with nested elements
-        var xmlContent = @"<root>
-                                <element>
-                                    <Name>John</Name>
-                                    <Details>
-                                        <Age>30</Age>
-                                    </Details>
-                                </element>
-                                <element>
-                                    <Name>Jane</Name>
-                                    <Details>
-                                        <Age>25</Age>
-                                    </Details>
-                                </element>
-                               </root>";
-        await File.WriteAllTextAsync(xmlFilePath, xmlContent);
+            var options = new Dictionary<string, object>
+            {
+                ["useTable"] = false
+            };
 
-        // Act
-        await _converter.ConvertAsync(xmlFilePath, wordOutputPath);
+            // Act
+            var result = _converter.Convert(xmlData, options);
 
-        // Assert
-        Assert.IsTrue(File.Exists(wordOutputPath));
-    }
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.Greater(result.Length, 0);
+        }
 
-    [Test]
-    public async Task ConvertAsync_GivenXmlFileWithAttributes_CreatesWordFile()
-    {
-        // Arrange
-        var xmlFilePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test_attributes.xml");
-        var wordOutputPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "test.docx");
+        [Test]
+        public void Convert_WithHierarchicalFormat_ReturnsWordDocument()
+        {
+            // Arrange
+            var xmlDoc = XDocument.Parse(@"<root>
+                                            <element>
+                                                <Name>John</Name>
+                                                <Details>
+                                                    <Age>30</Age>
+                                                </Details>
+                                            </element>
+                                           </root>");
+            
+            var xmlData = new XmlData
+            {
+                Document = xmlDoc,
+                Headers = new[] { "Name", "Details.Age" },
+                Rows = new List<string[]>
+                {
+                    new[] { "John", "30" }
+                }
+            };
 
-        // Create a sample XML file with attributes
-        var xmlContent = @"<root>
-                                <element Name='John' Age='30' />
-                                <element Name='Jane' Age='25' />
-                               </root>";
-        await File.WriteAllTextAsync(xmlFilePath, xmlContent);
+            var options = new Dictionary<string, object>
+            {
+                ["formatAsHierarchy"] = true
+            };
 
-        // Act
-        await _converter.ConvertAsync(xmlFilePath, wordOutputPath);
+            // Act
+            var result = _converter.Convert(xmlData, options);
 
-        // Assert
-        Assert.IsTrue(File.Exists(wordOutputPath));
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.Greater(result.Length, 0);
+        }
+
+        [Test]
+        public void Convert_WithCustomFontSettings_ReturnsWordDocument()
+        {
+            // Arrange
+            var xmlDoc = XDocument.Parse(@"<root>
+                                            <element>
+                                                <Name>John</Name>
+                                                <Age>30</Age>
+                                            </element>
+                                           </root>");
+            
+            var xmlData = new XmlData
+            {
+                Document = xmlDoc,
+                Headers = new[] { "Name", "Age" },
+                Rows = new List<string[]>
+                {
+                    new[] { "John", "30" }
+                }
+            };
+
+            var options = new Dictionary<string, object>
+            {
+                ["fontFamily"] = "Arial",
+                ["fontSize"] = 14
+            };
+
+            // Act
+            var result = _converter.Convert(xmlData, options);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.Greater(result.Length, 0);
+        }
+
+        [Test]
+        public void Convert_WithNullInput_ThrowsArgumentException()
+        {
+            // Arrange & Act & Assert
+            Assert.Throws<ArgumentException>(() => _converter.Convert(null));
+        }
     }
 }
