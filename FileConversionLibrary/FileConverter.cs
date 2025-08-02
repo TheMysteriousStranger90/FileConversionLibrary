@@ -72,6 +72,17 @@ public class FileConverter
     {
         try
         {
+            if (!File.Exists(csvFilePath))
+            {
+                throw new FileNotFoundException($"Input CSV file not found: {csvFilePath}");
+            }
+
+            var outputDirectory = Path.GetDirectoryName(jsonOutputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+            
             var csvData = await _csvReader.ReadWithAutoDetectDelimiterAsync(csvFilePath);
 
             var converter = _converterFactory.GetConverter<CsvData, string>(OutputFormat.Json);
@@ -90,6 +101,17 @@ public class FileConverter
     {
         try
         {
+            if (!File.Exists(csvFilePath))
+            {
+                throw new FileNotFoundException($"Input CSV file not found: {csvFilePath}");
+            }
+
+            var outputDirectory = Path.GetDirectoryName(pdfOutputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+            
             var csvData = await _csvReader.ReadWithAutoDetectDelimiterAsync(csvFilePath);
 
             var converter = _converterFactory.GetConverter<CsvData, byte[]>(OutputFormat.Pdf);
@@ -108,6 +130,17 @@ public class FileConverter
     {
         try
         {
+            if (!File.Exists(csvFilePath))
+            {
+                throw new FileNotFoundException($"Input CSV file not found: {csvFilePath}");
+            }
+
+            var outputDirectory = Path.GetDirectoryName(wordOutputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+            
             var csvData = await _csvReader.ReadWithAutoDetectDelimiterAsync(csvFilePath);
 
             var converter = _converterFactory.GetConverter<CsvData, byte[]>(OutputFormat.Word);
@@ -132,6 +165,17 @@ public class FileConverter
     {
         try
         {
+            if (!File.Exists(csvFilePath))
+            {
+                throw new FileNotFoundException($"Input CSV file not found: {csvFilePath}");
+            }
+
+            var outputDirectory = Path.GetDirectoryName(xmlOutputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+            
             var csvData = await _csvReader.ReadWithAutoDetectDelimiterAsync(csvFilePath);
 
             var converterOptions = new Dictionary<string, object>
@@ -163,6 +207,17 @@ public class FileConverter
     {
         try
         {
+            if (!File.Exists(csvFilePath))
+            {
+                throw new FileNotFoundException($"Input CSV file not found: {csvFilePath}");
+            }
+
+            var outputDirectory = Path.GetDirectoryName(yamlOutputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+            
             var csvData = await _csvReader.ReadWithAutoDetectDelimiterAsync(csvFilePath);
 
             var converter = _converterFactory.GetConverter<CsvData, string>(OutputFormat.Yaml);
