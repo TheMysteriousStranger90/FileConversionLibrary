@@ -14,12 +14,16 @@ public class CsvFileReader : IFileReader<CsvData>
     {
         _exceptionHandler = exceptionHandler;
     }
-
-
+    
     public async Task<CsvData> ReadWithAutoDetectDelimiterAsync(string filePath)
     {
         try
         {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"CSV file not found: {filePath}");
+            }
+
             var firstLines = File.ReadLines(filePath).Take(5).ToList();
             if (firstLines.Count == 0)
                 throw new Exception("Empty CSV file");
@@ -61,6 +65,11 @@ public class CsvFileReader : IFileReader<CsvData>
 
         try
         {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"CSV file not found: {filePath}");
+            }
+
             using var reader = new StreamReader(filePath, Encoding.UTF8);
             using var csv = new CsvHelper.CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
             {

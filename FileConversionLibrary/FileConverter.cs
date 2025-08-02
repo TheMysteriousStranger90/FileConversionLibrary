@@ -187,6 +187,17 @@ public class FileConverter
     {
         try
         {
+            if (!File.Exists(xmlFilePath))
+            {
+                throw new FileNotFoundException($"Input XML file not found: {xmlFilePath}");
+            }
+
+            var outputDirectory = Path.GetDirectoryName(csvOutputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
             var readerOptions = new Dictionary<string, object>
             {
                 ["includeAttributes"] = includeAttributes,
@@ -222,6 +233,17 @@ public class FileConverter
     {
         try
         {
+            if (!File.Exists(xmlFilePath))
+            {
+                throw new FileNotFoundException($"Input XML file not found: {xmlFilePath}");
+            }
+
+            var outputDirectory = Path.GetDirectoryName(jsonOutputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+            
             var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
 
             if (xmlData.Document == null)
@@ -258,6 +280,17 @@ public class FileConverter
     {
         try
         {
+            if (!File.Exists(xmlFilePath))
+            {
+                throw new FileNotFoundException($"Input XML file not found: {xmlFilePath}");
+            }
+
+            var outputDirectory = Path.GetDirectoryName(pdfOutputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+            
             var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
 
             var converterOptions = new Dictionary<string, object>
@@ -292,6 +325,17 @@ public class FileConverter
     {
         try
         {
+            if (!File.Exists(xmlFilePath))
+            {
+                throw new FileNotFoundException($"Input XML file not found: {xmlFilePath}");
+            }
+
+            var outputDirectory = Path.GetDirectoryName(wordOutputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+            
             var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
 
             if (xmlData.Headers == null || xmlData.Rows == null)
@@ -329,6 +373,17 @@ public class FileConverter
     {
         try
         {
+            if (!File.Exists(xmlFilePath))
+            {
+                throw new FileNotFoundException($"Input XML file not found: {xmlFilePath}");
+            }
+
+            var outputDirectory = Path.GetDirectoryName(yamlOutputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+            
             var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
 
             if (xmlData.Document == null)
