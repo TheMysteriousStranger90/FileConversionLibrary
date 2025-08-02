@@ -125,7 +125,7 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
                 {
                     var row = input.Rows[i];
 
-                    BaseColor rowBackground = null;
+                    BaseColor? rowBackground = null;
                     if (alternateRowColors && i % 2 == 1)
                     {
                         rowBackground = new BaseColor(240, 240, 240);
