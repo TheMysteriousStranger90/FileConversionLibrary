@@ -8,7 +8,7 @@ namespace FileConversionLibrary.Converters;
 
 public class CsvToWordConverter : IConverter<CsvData, byte[]>
 {
-    public byte[] Convert(CsvData input, object options = null)
+    public byte[] Convert(CsvData input, object? options = null)
     {
         if (input?.Headers == null || input.Rows == null)
         {
@@ -45,7 +45,7 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
                     
                     var runProperties = new RunProperties();
                     runProperties.AppendChild(new Bold());
-                    headerParagraph.GetFirstChild<Run>().PrependChild(runProperties);
+                    headerParagraph.GetFirstChild<Run>()?.PrependChild(runProperties);
                     
                     headerCell.Append(headerParagraph);
                     headerRow.Append(headerCell);
@@ -74,7 +74,7 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
                     new FontSize { Val = "28" },
                     new Bold()
                 );
-                titleParagraph.GetFirstChild<Run>().PrependChild(titleRunProperties);
+                titleParagraph.GetFirstChild<Run>()?.PrependChild(titleRunProperties);
                 
                 body.InsertBefore(titleParagraph, table);
                 

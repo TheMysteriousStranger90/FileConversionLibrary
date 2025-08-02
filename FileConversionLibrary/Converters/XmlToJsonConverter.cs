@@ -9,7 +9,7 @@ namespace FileConversionLibrary.Converters;
 
 public class XmlToJsonConverter : IConverter<XmlData, string>
 {
-    public string Convert(XmlData input, object options = null)
+    public string Convert(XmlData input, object? options = null)
     {
         if (input?.Document == null)
         {
@@ -42,7 +42,7 @@ public class XmlToJsonConverter : IConverter<XmlData, string>
 
         if (removeWhitespace)
         {
-            RemoveWhitespaceNodes(docToConvert.Root);
+            if (docToConvert.Root != null) RemoveWhitespaceNodes(docToConvert.Root);
         }
 
         string json = JsonConvert.SerializeXNode(docToConvert.Root,
@@ -105,7 +105,7 @@ public class XmlToJsonConverter : IConverter<XmlData, string>
                     {
                         if (item is JValue val && val.Type == JTokenType.String)
                         {
-                            string text = val.Value<string>();
+                            string? text = val.Value<string>();
                             if (!string.IsNullOrWhiteSpace(text))
                             {
                                 onlyWhitespace = false;
@@ -126,7 +126,7 @@ public class XmlToJsonConverter : IConverter<XmlData, string>
                 }
                 else if (prop.Value is JValue val && val.Type == JTokenType.String)
                 {
-                    string text = val.Value<string>();
+                    string? text = val.Value<string>();
                     if (string.IsNullOrWhiteSpace(text))
                     {
                         prop.Remove();
@@ -156,7 +156,7 @@ public class XmlToJsonConverter : IConverter<XmlData, string>
             {
                 if (property.Value is JValue jValue && jValue.Type == JTokenType.String)
                 {
-                    string strValue = jValue.Value<string>();
+                    string? strValue = jValue.Value<string>();
 
                     if (int.TryParse(strValue, out int intValue))
                     {

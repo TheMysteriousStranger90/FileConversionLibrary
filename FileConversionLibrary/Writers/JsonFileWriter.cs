@@ -4,14 +4,14 @@ namespace FileConversionLibrary.Writers;
 
 public class JsonFileWriter : IFileWriter<string>
 {
-    private readonly IExceptionHandler _exceptionHandler;
+    private readonly IExceptionHandler? _exceptionHandler;
 
-    public JsonFileWriter(IExceptionHandler exceptionHandler = null)
+    public JsonFileWriter(IExceptionHandler? exceptionHandler = null)
     {
         _exceptionHandler = exceptionHandler;
     }
 
-    public async Task WriteAsync(string filePath, string data, object options = null)
+    public async Task WriteAsync(string filePath, string data, object? options = null)
     {
         try
         {

@@ -12,7 +12,7 @@ namespace FileConversionLibrary;
 
 public class FileConverter
 {
-    private readonly IExceptionHandler _exceptionHandler;
+    private readonly IExceptionHandler? _exceptionHandler;
     private readonly IFileReader<XmlData> _xmlReader;
     private readonly IFileWriter<string> _csvWriter;
     private readonly IFileReader<CsvData> _csvReader;
@@ -23,7 +23,7 @@ public class FileConverter
     private readonly IFileWriter<byte[]> _wordWriter;
     private readonly ConverterFactory _converterFactory;
 
-    private static FileConverter _instance;
+    private static FileConverter? _instance;
 
     public FileConverter()
     {
@@ -49,7 +49,7 @@ public class FileConverter
         IFileReader<XmlData> xmlReader,
         IFileWriter<string> csvWriter,
         ConverterFactory converterFactory,
-        IExceptionHandler exceptionHandler)
+        IExceptionHandler? exceptionHandler)
     {
         _csvReader = csvReader;
         _jsonWriter = jsonWriter;

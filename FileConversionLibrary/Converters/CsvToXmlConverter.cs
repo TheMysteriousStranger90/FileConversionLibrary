@@ -14,7 +14,7 @@ public class CsvToXmlConverter : IConverter<CsvData, string>
         Mixed
     }
     
-    public string Convert(CsvData input, object options = null)
+    public string Convert(CsvData input, object? options = null)
     {
         if (input?.Headers == null || input.Rows == null)
         {
@@ -96,7 +96,7 @@ public class CsvToXmlConverter : IConverter<CsvData, string>
                 }
             }
             
-            root.Add(rowElement);
+            root?.Add(rowElement);
         }
 
         return doc.ToString();

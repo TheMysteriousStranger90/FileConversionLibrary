@@ -7,7 +7,7 @@ namespace FileConversionLibrary.Converters;
 
 public class CsvToPdfConverter : IConverter<CsvData, byte[]>
 {
-    public byte[] Convert(CsvData input, object options = null)
+    public byte[] Convert(CsvData input, object? options = null)
     {
         if (input?.Headers == null || input.Rows == null)
         {

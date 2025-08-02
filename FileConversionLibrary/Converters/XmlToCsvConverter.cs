@@ -6,7 +6,7 @@ namespace FileConversionLibrary.Converters;
 
 public class XmlToCsvConverter : IConverter<XmlData, string>
 {
-    public string Convert(XmlData input, object options = null)
+    public string Convert(XmlData input, object? options = null)
     {
         if (input?.Headers == null || input.Rows == null)
         {

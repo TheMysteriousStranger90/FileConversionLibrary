@@ -15,7 +15,7 @@ public class CsvToYamlConverter : IConverter<CsvData, string>
         Folded
     }
 
-    public string Convert(CsvData input, object options = null)
+    public string Convert(CsvData input, object? options = null)
     {
         if (input?.Headers == null || input.Rows == null)
         {

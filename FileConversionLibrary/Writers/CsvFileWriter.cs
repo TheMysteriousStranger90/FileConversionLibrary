@@ -4,14 +4,14 @@ namespace FileConversionLibrary.Writers;
 
 public class CsvFileWriter : IFileWriter<string>
 {
-    private readonly IExceptionHandler _exceptionHandler;
+    private readonly IExceptionHandler? _exceptionHandler;
 
-    public CsvFileWriter(IExceptionHandler exceptionHandler = null)
+    public CsvFileWriter(IExceptionHandler? exceptionHandler = null)
     {
         _exceptionHandler = exceptionHandler;
     }
 
-    public async Task WriteAsync(string filePath, string data, object options = null)
+    public async Task WriteAsync(string filePath, string data, object? options = null)
     {
         try
         {

@@ -7,9 +7,9 @@ namespace FileConversionLibrary.Readers;
 
 public class XmlFileReader : IFileReader<XmlData>
 {
-    private readonly IExceptionHandler _exceptionHandler;
+    private readonly IExceptionHandler? _exceptionHandler;
 
-    public XmlFileReader(IExceptionHandler exceptionHandler = null)
+    public XmlFileReader(IExceptionHandler? exceptionHandler = null)
     {
         _exceptionHandler = exceptionHandler;
     }
@@ -19,7 +19,7 @@ public class XmlFileReader : IFileReader<XmlData>
         return await ReadAsync(filePath);
     }
 
-    public async Task<XmlData> ReadAsync(string filePath, object options = null)
+    public async Task<XmlData> ReadAsync(string filePath, object? options = null)
     {
         try
         {
@@ -47,9 +47,9 @@ public class XmlFileReader : IFileReader<XmlData>
                 Document = doc,
                 Headers = headers,
                 Rows = rows,
-                RootElementName = doc.Root?.Name.LocalName,
-                XmlVersion = doc.Declaration?.Version,
-                Encoding = doc.Declaration?.Encoding
+                RootElementName = doc.Root?.Name.LocalName ?? "root",
+                XmlVersion = doc.Declaration?.Version ?? "1.0",
+                Encoding = doc.Declaration?.Encoding ?? "UTF-8"
             };
 
             return result;
@@ -200,7 +200,15 @@ public class XmlFileReader : IFileReader<XmlData>
             }
 
             _exceptionHandler?.Handle(new Exception("Successfully parsed XML using manual parser"));
-            return new XmlData { Headers = headerArray, Rows = dataRows };
+            return new XmlData 
+            { 
+                Headers = headerArray, 
+                Rows = dataRows,
+                Document = new XDocument(),
+                RootElementName = "root",
+                XmlVersion = "1.0",
+                Encoding = "UTF-8"
+            };
         }
         catch (Exception ex)
         {

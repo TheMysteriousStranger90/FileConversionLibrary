@@ -2,5 +2,5 @@
 
 public interface IFileWriter<T>
 {
-    Task WriteAsync(string filePath, T data, object options = null);
+    Task WriteAsync(string filePath, T data, object? options = null);
 }
