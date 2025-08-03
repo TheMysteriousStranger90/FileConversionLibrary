@@ -8,18 +8,22 @@ namespace FileConversionLibrary.Readers;
 
 public class CsvFileReader : IFileReader<CsvData>
 {
-    private readonly IExceptionHandler _exceptionHandler;
+    private readonly IExceptionHandler? _exceptionHandler;
 
-    public CsvFileReader(IExceptionHandler exceptionHandler = null)
+    public CsvFileReader(IExceptionHandler? exceptionHandler = null)
     {
         _exceptionHandler = exceptionHandler;
     }
-
-
+    
     public async Task<CsvData> ReadWithAutoDetectDelimiterAsync(string filePath)
     {
         try
         {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"CSV file not found: {filePath}");
+            }
+
             var firstLines = File.ReadLines(filePath).Take(5).ToList();
             if (firstLines.Count == 0)
                 throw new Exception("Empty CSV file");
@@ -55,12 +59,17 @@ public class CsvFileReader : IFileReader<CsvData>
         }
     }
 
-    private async Task<CsvData> ReadAsync(string filePath, object options = null)
+    private async Task<CsvData> ReadAsync(string filePath, object? options = null)
     {
         var delimiter = options is char ? (char)options : ',';
 
         try
         {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"CSV file not found: {filePath}");
+            }
+
             using var reader = new StreamReader(filePath, Encoding.UTF8);
             using var csv = new CsvHelper.CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
             {
@@ -76,7 +85,7 @@ public class CsvFileReader : IFileReader<CsvData>
 
             await csv.ReadAsync();
             csv.ReadHeader();
-            var headers = csv.Context.Reader.HeaderRecord?.Select(h => h.Trim()).ToArray();
+            var headers = csv.Context.Reader?.HeaderRecord?.Select(h => h.Trim()).ToArray();
 
             if (headers == null || headers.Length == 0)
             {

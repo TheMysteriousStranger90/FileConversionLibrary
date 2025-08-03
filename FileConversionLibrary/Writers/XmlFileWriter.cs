@@ -7,14 +7,14 @@ namespace FileConversionLibrary.Writers;
 
 public class XmlFileWriter : IFileWriter<string>
 {
-    private readonly IExceptionHandler _exceptionHandler;
+    private readonly IExceptionHandler? _exceptionHandler;
 
-    public XmlFileWriter(IExceptionHandler exceptionHandler = null)
+    public XmlFileWriter(IExceptionHandler? exceptionHandler = null)
     {
         _exceptionHandler = exceptionHandler;
     }
 
-    public async Task WriteAsync(string filePath, string data, object options = null)
+    public async Task WriteAsync(string filePath, string data, object? options = null)
     {
         try
         {
@@ -27,7 +27,6 @@ public class XmlFileWriter : IFileWriter<string>
             string indentChars = "  ";
             bool useTabs = false;
             bool expandEntities = false;
-
 
             if (options is Dictionary<string, object> optionsDict)
             {
@@ -72,7 +71,7 @@ public class XmlFileWriter : IFileWriter<string>
                     await Task.Run(() => doc.Save(writer));
                 }
             }
-            catch (XmlException xmlEx)
+            catch (XmlException)
             {
                 await WriteRawXmlAsync(filePath, data, useIndent, indentChars, expandEntities);
             }

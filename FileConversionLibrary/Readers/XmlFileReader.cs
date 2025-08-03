@@ -7,9 +7,9 @@ namespace FileConversionLibrary.Readers;
 
 public class XmlFileReader : IFileReader<XmlData>
 {
-    private readonly IExceptionHandler _exceptionHandler;
+    private readonly IExceptionHandler? _exceptionHandler;
 
-    public XmlFileReader(IExceptionHandler exceptionHandler = null)
+    public XmlFileReader(IExceptionHandler? exceptionHandler = null)
     {
         _exceptionHandler = exceptionHandler;
     }
@@ -19,10 +19,15 @@ public class XmlFileReader : IFileReader<XmlData>
         return await ReadAsync(filePath);
     }
 
-    public async Task<XmlData> ReadAsync(string filePath, object options = null)
+    public async Task<XmlData> ReadAsync(string filePath, object? options = null)
     {
         try
         {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"XML file not found: {filePath}");
+            }
+
             bool preserveWhitespace = false;
 
             if (options is Dictionary<string, object> optionsDict)
@@ -47,9 +52,9 @@ public class XmlFileReader : IFileReader<XmlData>
                 Document = doc,
                 Headers = headers,
                 Rows = rows,
-                RootElementName = doc.Root?.Name.LocalName,
-                XmlVersion = doc.Declaration?.Version,
-                Encoding = doc.Declaration?.Encoding
+                RootElementName = doc.Root?.Name.LocalName ?? "root",
+                XmlVersion = doc.Declaration?.Version ?? "1.0",
+                Encoding = doc.Declaration?.Encoding ?? "UTF-8"
             };
 
             return result;
@@ -68,34 +73,47 @@ public class XmlFileReader : IFileReader<XmlData>
 
     private string[] ExtractHeaders(XDocument doc)
     {
-        var elementName = doc.Root?.Elements().FirstOrDefault()?.Name.LocalName;
-        var rowElements = doc.Root?.Elements(elementName).ToList() ?? new List<XElement>();
-
-        if (!rowElements.Any())
+        if (doc.Root == null)
             return Array.Empty<string>();
 
-        var firstRow = rowElements.First();
+        var headers = new HashSet<string>();
 
-        var elementHeaders = firstRow.Elements()
-            .Select(e => e.Name.LocalName)
-            .ToList();
+        var allElements = doc.Root.Elements().ToList();
 
-        var attributeHeaders = firstRow.Attributes()
-            .Where(a => !a.IsNamespaceDeclaration)
-            .Select(a => "attr_" + a.Name.LocalName)
-            .ToList();
+        if (!allElements.Any())
+            return Array.Empty<string>();
 
-        return attributeHeaders.Concat(elementHeaders).ToArray();
+        foreach (var element in allElements)
+        {
+            foreach (var attr in element.Attributes().Where(a => !a.IsNamespaceDeclaration))
+            {
+                headers.Add("attr_" + attr.Name.LocalName);
+            }
+
+            foreach (var child in element.Elements())
+            {
+                headers.Add(child.Name.LocalName);
+            }
+
+            if (!element.HasElements && !string.IsNullOrWhiteSpace(element.Value))
+            {
+                headers.Add("text_value");
+            }
+        }
+
+        return headers.ToArray();
     }
 
     private List<string[]> ExtractRows(XDocument doc, string[] headers)
     {
         var rows = new List<string[]>();
 
-        var elementName = doc.Root?.Elements().FirstOrDefault()?.Name.LocalName;
-        var rowElements = doc.Root?.Elements(elementName).ToList() ?? new List<XElement>();
+        if (doc.Root == null)
+            return rows;
 
-        foreach (var rowElement in rowElements)
+        var allElements = doc.Root.Elements().ToList();
+
+        foreach (var element in allElements)
         {
             var row = new string[headers.Length];
 
@@ -106,21 +124,39 @@ public class XmlFileReader : IFileReader<XmlData>
                 if (header.StartsWith("attr_"))
                 {
                     var attrName = header.Substring(5);
-                    var attr = rowElement.Attribute(attrName);
+                    var attr = element.Attribute(attrName);
                     row[i] = attr?.Value ?? string.Empty;
                 }
-                else
+                else if (header == "text_value")
                 {
-                    var element = rowElement.Element(header);
-
-                    var cdata = element?.DescendantNodes().OfType<XCData>().FirstOrDefault();
-                    if (cdata != null)
+                    if (!element.HasElements)
                     {
-                        row[i] = cdata.Value;
+                        row[i] = element.Value?.Trim() ?? string.Empty;
                     }
                     else
                     {
-                        row[i] = element?.Value ?? string.Empty;
+                        row[i] = string.Empty;
+                    }
+                }
+                else
+                {
+                    var childElement = element.Element(header);
+
+                    if (childElement != null)
+                    {
+                        var cdata = childElement.DescendantNodes().OfType<XCData>().FirstOrDefault();
+                        if (cdata != null)
+                        {
+                            row[i] = cdata.Value;
+                        }
+                        else
+                        {
+                            row[i] = childElement.Value?.Trim() ?? string.Empty;
+                        }
+                    }
+                    else
+                    {
+                        row[i] = string.Empty;
                     }
                 }
             }
@@ -200,7 +236,15 @@ public class XmlFileReader : IFileReader<XmlData>
             }
 
             _exceptionHandler?.Handle(new Exception("Successfully parsed XML using manual parser"));
-            return new XmlData { Headers = headerArray, Rows = dataRows };
+            return new XmlData
+            {
+                Headers = headerArray,
+                Rows = dataRows,
+                Document = new XDocument(),
+                RootElementName = "root",
+                XmlVersion = "1.0",
+                Encoding = "UTF-8"
+            };
         }
         catch (Exception ex)
         {

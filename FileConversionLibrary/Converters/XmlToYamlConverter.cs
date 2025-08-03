@@ -8,7 +8,7 @@ namespace FileConversionLibrary.Converters;
 
 public class XmlToYamlConverter : IConverter<XmlData, string>
 {
-    public string Convert(XmlData input, object options = null)
+    public string Convert(XmlData input, object? options = null)
     {
         if (input?.Document == null)
         {

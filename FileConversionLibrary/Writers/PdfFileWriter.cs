@@ -4,14 +4,14 @@ namespace FileConversionLibrary.Writers;
 
 public class PdfFileWriter : IFileWriter<byte[]>
 {
-    private readonly IExceptionHandler _exceptionHandler;
+    private readonly IExceptionHandler? _exceptionHandler;
 
-    public PdfFileWriter(IExceptionHandler exceptionHandler = null)
+    public PdfFileWriter(IExceptionHandler? exceptionHandler = null)
     {
         _exceptionHandler = exceptionHandler;
     }
 
-    public async Task WriteAsync(string filePath, byte[] data, object options = null)
+    public async Task WriteAsync(string filePath, byte[] data, object? options = null)
     {
         try
         {
