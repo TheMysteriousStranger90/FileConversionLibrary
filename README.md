@@ -22,81 +22,67 @@ var fileConverter = new FileConverter();
 
 #### CSV Conversions
 ```csharp
-// CSV to JSON
-await fileConverter.ConvertCsvToJsonAsync(
-    @"C:\input.csv", 
-    @"C:\output.json"
-);
+        // Convert CSV to PDF
+        await fileConverter.ConvertCsvToPdfAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.pdf"
+        );
 
-// CSV to XML with options
-await fileConverter.ConvertCsvToXmlAsync(
-    @"C:\input.csv",
-    @"C:\output.xml",
-    CsvToXmlConverter.XmlOutputFormat.Elements,
-    useCData: true,
-    useTabsForIndentation: false,
-    indentSize: 2
-);
+        // Convert CSV to JSON
+        await fileConverter.ConvertCsvToJsonAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.json"
+        );
 
-// CSV to PDF
-await fileConverter.ConvertCsvToPdfAsync(
-    @"C:\input.csv",
-    @"C:\output.pdf"
-);
+        // Convert CSV to Word
+        await fileConverter.ConvertCsvToWordAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.docx"
+        );
 
-// CSV to Word
-await fileConverter.ConvertCsvToWordAsync(
-    @"C:\input.csv",
-    @"C:\output.docx"
-);
+        // Convert CSV to XML
+        await fileConverter.ConvertCsvToXmlAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.xml");
 
-// CSV to YAML
-await fileConverter.ConvertCsvToYamlAsync(
-    @"C:\input.csv",
-    @"C:\output.yaml"
-);
+        // Convert CSV to YAML
+        await fileConverter.ConvertCsvToYamlAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.yaml"
+        );
 ```
 
 #### XML Conversions
 ```csharp
-// XML to CSV
-await fileConverter.ConvertXmlToCsvAsync(
-    @"C:\input.xml",
-    @"C:\output.csv",
-    delimiter: ',',
-    includeAttributes: true
-);
+        // Convert XML to CSV
+        await fileConverter.ConvertXmlToCsvAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.csv"
+        );
 
-// XML to JSON
-await fileConverter.ConvertXmlToJsonAsync(
-    @"C:\input.xml",
-    @"C:\output.json",
-    convertValues: true,
-    removeWhitespace: true
-);
+        // Convert XML to JSON
+        await fileConverter.ConvertXmlToJsonAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.json"
+        );
 
-// XML to PDF
-await fileConverter.ConvertXmlToPdfAsync(
-    @"C:\input.xml",
-    @"C:\output.pdf",
-    hierarchicalView: false,
-    fontSize: 10f
-);
+        // Convert XML to PDF
+        await fileConverter.ConvertXmlToPdfAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.pdf"
+        );
 
-// XML to Word
-await fileConverter.ConvertXmlToWordAsync(
-    @"C:\input.xml",
-    @"C:\output.docx",
-    useTable: true,
-    fontFamily: "Calibri"
-);
+        // Convert XML to Word
+        await fileConverter.ConvertXmlToWordAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.docx"
+        );
 
-// XML to YAML
-await fileConverter.ConvertXmlToYamlAsync(
-    @"C:\input.xml",
-    @"C:\output.yaml",
-    useCamelCase: false
-);
+        // Convert XML to YAML
+        await fileConverter.ConvertXmlToYamlAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.yaml"
+        );
 ```
 
 ### **Stream API**
