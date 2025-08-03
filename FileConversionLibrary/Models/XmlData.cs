@@ -5,13 +5,12 @@ namespace FileConversionLibrary.Models;
 
 public class XmlData
 {
-    [Required]
     public XDocument Document { get; set; } = new XDocument();
     
-    [Required]
+    [Obsolete("Consider using Document property for better XML handling. This property is maintained for backward compatibility.")]
     public string[] Headers { get; set; } = Array.Empty<string>();
     
-    [Required]
+    [Obsolete("Consider using Document property for better XML handling. This property is maintained for backward compatibility.")]
     public List<string[]> Rows { get; set; } = new List<string[]>();
 
     [Required]

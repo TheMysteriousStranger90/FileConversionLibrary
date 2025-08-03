@@ -9,9 +9,49 @@ public class XmlToCsvConverter : IConverter<XmlData, string>
 {
     public string Convert(XmlData input, object? options = null)
     {
-        if (input?.Document?.Root == null)
+        if (input == null)
         {
-            throw new ArgumentException("Invalid XML data");
+            throw new ArgumentException("Input XmlData cannot be null");
+        }
+
+        var dataFormat = DetermineDataFormat(input);
+
+        return dataFormat switch
+        {
+            XmlDataFormat.Document => ConvertFromDocument(input, options),
+            XmlDataFormat.TabularData => ConvertFromTabularData(input, options),
+            XmlDataFormat.Both => ConvertFromDocument(input, options),
+            _ => throw new ArgumentException("XmlData contains no valid data format")
+        };
+    }
+
+    private enum XmlDataFormat
+    {
+        None,
+        Document,
+        TabularData,
+        Both
+    }
+
+    private XmlDataFormat DetermineDataFormat(XmlData input)
+    {
+        bool hasDocument = input.Document?.Root != null;
+        bool hasTabularData = input.Headers?.Length > 0 && input.Rows?.Count > 0;
+
+        return (hasDocument, hasTabularData) switch
+        {
+            (true, true) => XmlDataFormat.Both,
+            (true, false) => XmlDataFormat.Document,
+            (false, true) => XmlDataFormat.TabularData,
+            _ => XmlDataFormat.None
+        };
+    }
+
+    private string ConvertFromDocument(XmlData input, object? options)
+    {
+        if (input.Document?.Root == null)
+        {
+            throw new ArgumentException("Invalid XML Document");
         }
 
         var delimiter = ',';
@@ -20,40 +60,10 @@ public class XmlToCsvConverter : IConverter<XmlData, string>
         bool flattenHierarchy = true;
         string? customNullValue = null;
 
-        if (options is char delimiterChar)
-        {
-            delimiter = delimiterChar;
-        }
-        else if (options is Dictionary<string, object> optionsDict)
-        {
-            if (optionsDict.TryGetValue("delimiter", out var delimiterObj) && delimiterObj is char delimiterChar2)
-            {
-                delimiter = delimiterChar2;
-            }
-
-            if (optionsDict.TryGetValue("quoteValues", out var quoteObj) && quoteObj is bool quoteValue)
-            {
-                quoteValues = quoteValue;
-            }
-
-            if (optionsDict.TryGetValue("includeHeaders", out var headersObj) && headersObj is bool headersValue)
-            {
-                includeHeaders = headersValue;
-            }
-
-            if (optionsDict.TryGetValue("flattenHierarchy", out var flattenObj) && flattenObj is bool flattenValue)
-            {
-                flattenHierarchy = flattenValue;
-            }
-
-            if (optionsDict.TryGetValue("customNullValue", out var nullObj) && nullObj is string nullValue)
-            {
-                customNullValue = nullValue;
-            }
-        }
+        ParseOptions(options, ref delimiter, ref quoteValues, ref includeHeaders, 
+                    ref flattenHierarchy, ref customNullValue);
 
         var root = input.Document.Root;
-        
         var recordElements = root.Elements().ToList();
         
         if (!recordElements.Any())
@@ -97,6 +107,101 @@ public class XmlToCsvConverter : IConverter<XmlData, string>
         }
 
         return sb.ToString();
+    }
+
+    private string ConvertFromTabularData(XmlData input, object? options)
+    {
+        if (input.Headers == null || input.Rows == null)
+        {
+            throw new ArgumentException("Invalid tabular data in XmlData");
+        }
+
+        if (input.Headers.Length == 0)
+        {
+            throw new ArgumentException("No headers found in tabular data");
+        }
+
+        var delimiter = ',';
+        bool quoteValues = true;
+        bool includeHeaders = true;
+        bool flattenHierarchy = false;
+        string? customNullValue = null;
+
+        ParseOptions(options, ref delimiter, ref quoteValues, ref includeHeaders, 
+                    ref flattenHierarchy, ref customNullValue);
+
+        var sb = new StringBuilder();
+
+        if (includeHeaders)
+        {
+            var headerLine = string.Join(delimiter.ToString(),
+                input.Headers.Select(h => quoteValues ? QuoteValue(h, delimiter) : h));
+            sb.AppendLine(headerLine);
+        }
+
+        foreach (var row in input.Rows)
+        {
+            var values = new string[input.Headers.Length];
+
+            for (int i = 0; i < input.Headers.Length; i++)
+            {
+                string cellValue;
+                if (i < row.Length)
+                {
+                    cellValue = row[i] ?? string.Empty;
+                    if (string.IsNullOrEmpty(cellValue) && customNullValue != null)
+                    {
+                        cellValue = customNullValue;
+                    }
+                }
+                else
+                {
+                    cellValue = customNullValue ?? string.Empty;
+                }
+
+                values[i] = quoteValues ? QuoteValue(cellValue, delimiter) : cellValue;
+            }
+
+            sb.AppendLine(string.Join(delimiter.ToString(), values));
+        }
+
+        return sb.ToString();
+    }
+
+    private void ParseOptions(object? options, ref char delimiter, ref bool quoteValues, 
+                             ref bool includeHeaders, ref bool flattenHierarchy, ref string? customNullValue)
+    {
+        if (options is char delimiterChar)
+        {
+            delimiter = delimiterChar;
+        }
+        else if (options is Dictionary<string, object> optionsDict)
+        {
+            if (optionsDict.TryGetValue("delimiter", out var delimiterObj) && delimiterObj is char delimiterChar2)
+            {
+                delimiter = delimiterChar2;
+            }
+
+            if (optionsDict.TryGetValue("quoteValues", out var quoteObj) && quoteObj is bool quoteValue)
+            {
+                quoteValues = quoteValue;
+            }
+
+            if (optionsDict.TryGetValue("includeHeaders", out var headersObj) && headersObj is bool headersValue)
+            {
+                includeHeaders = headersValue;
+            }
+
+            if (optionsDict.TryGetValue("flattenHierarchy", out var flattenObj) && flattenObj is bool flattenValue)
+            {
+                flattenHierarchy = flattenValue;
+            }
+
+            if (optionsDict.TryGetValue("customNullValue", out var nullObj) && nullObj is string nullValue)
+            {
+                customNullValue = nullValue;
+            }
+        }
     }
 
     private List<string> ExtractHeaders(List<XElement> recordElements, bool flattenHierarchy)
