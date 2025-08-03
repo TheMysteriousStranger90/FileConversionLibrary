@@ -13,6 +13,8 @@
             It supports converting CSV files to XML, PDF, Word, JSON, and YAML formats, as well as converting XML files to CSV, PDF, Word, JSON, and YAML formats.
             The library provides asynchronous methods for all conversions and includes comprehensive error handling.</Description>
         <RepositoryUrl>https://github.com/TheMysteriousStranger90/FileConversionLibrary</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://github.com/TheMysteriousStranger90/FileConversionLibrary</PackageProjectUrl>
         <PackageTags>file-conversion, csv, xml</PackageTags>
         <PackageReleaseNotes>Version 1.5.0:
             - (Released: 4 August 2025) - Major update with new APIs and enhanced functionality.
@@ -27,6 +29,26 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageIcon>Cover.png</PackageIcon>
+        
+        <AssemblyTitle>FileConversionLibrary</AssemblyTitle>
+        <AssemblyDescription>Advanced file format conversion library for .NET</AssemblyDescription>
+        <AssemblyCompany>Bohdan Harabadzhyu</AssemblyCompany>
+        <AssemblyProduct>FileConversionLibrary</AssemblyProduct>
+        <AssemblyCopyright>Copyright © 2025 Bohdan Harabadzhyu</AssemblyCopyright>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <FileVersion>1.5.0.0</FileVersion>
+        
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+        <WarningsAsErrors />
+
+        <Optimize>true</Optimize>
+        <DebugType>portable</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+
+        <LangVersion>latest</LangVersion>
+        <Features>strict</Features>
     </PropertyGroup>
 
     <ItemGroup>
