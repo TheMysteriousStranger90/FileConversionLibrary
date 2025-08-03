@@ -9,7 +9,7 @@ namespace FileConversionLibrary.Converters;
 
 public class XmlToWordConverter : IConverter<XmlData, byte[]>
 {
-    public byte[] Convert(XmlData input, object options = null)
+    public byte[] Convert(XmlData input, object? options = null)
     {
         if (input?.Headers == null || input.Rows == null)
         {
@@ -232,7 +232,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
             ));
         }
         
-        string textContent = element.Nodes()
+        string? textContent = element.Nodes()
             .OfType<System.Xml.Linq.XText>()
             .Where(t => !string.IsNullOrWhiteSpace(t.Value))
             .Select(t => t.Value.Trim())

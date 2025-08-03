@@ -4,14 +4,14 @@ namespace FileConversionLibrary.Writers;
 
 public class WordFileWriter : IFileWriter<byte[]>
 {
-    private readonly IExceptionHandler _exceptionHandler;
+    private readonly IExceptionHandler? _exceptionHandler;
 
-    public WordFileWriter(IExceptionHandler exceptionHandler = null)
+    public WordFileWriter(IExceptionHandler? exceptionHandler = null)
     {
         _exceptionHandler = exceptionHandler;
     }
 
-    public async Task WriteAsync(string filePath, byte[] data, object options = null)
+    public async Task WriteAsync(string filePath, byte[] data, object? options = null)
     {
         try
         {
