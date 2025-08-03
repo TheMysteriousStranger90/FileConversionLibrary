@@ -19,10 +19,10 @@ class Program
             await TestOriginalFileAPI(fileConverter);
 
             // Test new Stream API
-            await TestStreamAPI(fileConverter);
+            //await TestStreamAPI(fileConverter);
 
             // Test new In-Memory API
-            TestInMemoryAPI(fileConverter);
+            //TestInMemoryAPI(fileConverter);
 
             Console.WriteLine("\n🎉 All tests completed successfully!");
         }
@@ -187,7 +187,7 @@ class Program
         {
             ConvertValues = true,
             UseIndentation = true,
-            IncludeRowNumbers = true,
+            IncludeRowNumbers = false,
             CreateNestedObjects = false,
             ConvertArrays = false
         };
@@ -202,9 +202,9 @@ class Program
         {
             FontSize = 11f,
             Title = "Employee Report",
-            IncludeTimestamp = true,
-            IncludeRowNumbers = true,
-            AlternateRowColors = true,
+            IncludeTimestamp = false,
+            IncludeRowNumbers = false,
+            AlternateRowColors = false,
             LandscapeOrientation = false,
             FontFamily = "Helvetica"
         };

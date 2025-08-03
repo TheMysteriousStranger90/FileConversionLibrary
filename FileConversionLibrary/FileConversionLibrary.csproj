@@ -15,7 +15,7 @@
         <RepositoryUrl>https://github.com/TheMysteriousStranger90/FileConversionLibrary</RepositoryUrl>
         <PackageTags>file-conversion, csv, xml</PackageTags>
         <PackageReleaseNotes>Version 1.5.0:
-            - (Released: Unknown August 2025) - Major update with new APIs and enhanced functionality.
+            - (Released: 4 August 2025) - Major update with new APIs and enhanced functionality.
             - Added Stream API for direct stream-to-stream conversions without temporary files.
             - Introduced In-Memory conversion API for working with data objects directly.
             - Added comprehensive strongly-typed options classes for all conversion types.
