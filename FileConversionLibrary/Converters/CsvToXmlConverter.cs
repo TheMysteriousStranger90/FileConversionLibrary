@@ -214,7 +214,7 @@ public class CsvToXmlConverter : IConverter<CsvData, string>
                 sortRows, sortByColumn, ascending);
         }
 
-        return doc.ToString(preserveWhitespace ? SaveOptions.None : SaveOptions.None);
+        return GetXmlString(doc, preserveWhitespace);
     }
 
     private void ProcessGroupedData(XElement rootElement, CsvData input, string groupByColumnName,
@@ -622,5 +622,19 @@ public class CsvToXmlConverter : IConverter<CsvData, string>
             .Replace(">", "&gt;")
             .Replace("\"", "&quot;")
             .Replace("'", "&apos;");
+    }
+    
+    private string GetXmlString(XDocument doc, bool preserveWhitespace)
+    {
+        var sb = new StringBuilder();
+    
+        var version = doc.Declaration?.Version ?? "1.0";
+        var encoding = doc.Declaration?.Encoding ?? "UTF-8";
+        sb.AppendLine($"<?xml version=\"{version}\" encoding=\"{encoding}\"?>");
+    
+        var saveOptions = preserveWhitespace ? SaveOptions.None : SaveOptions.DisableFormatting;
+        sb.Append(doc.ToString(saveOptions));
+    
+        return sb.ToString();
     }
 }
