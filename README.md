@@ -1,118 +1,340 @@
 # File Conversion Library
 ![Image 1](Screenshots/Screen1.png)
 
-This library provides functionality to convert CSV and XML files to various formats such as XML, PDF, Word, JSON, and YAML.
+A powerful .NET library for converting CSV and XML files to various formats including XML, PDF, Word, JSON, and YAML. Now with enhanced Stream API and In-Memory conversion capabilities!
 
-## Usage
+## **New Features in v1.5.0**
 
-### Initializing the FileConverter
+- **Stream API**: Convert data directly from streams without temporary files
+- **In-Memory Conversion**: Work with data objects directly in memory
+- **Advanced Options**: Comprehensive configuration options for all formats
+- **Enhanced Performance**: Optimized for large datasets
+- **Type-Safe Configuration**: Strongly-typed options classes
 
-To use the library, you need to create an instance of the `FileConverter` class.
+## **Usage**
+
+### **Basic File Conversion (Original API)**
+
 ```csharp
 // Create a new instance of the FileConverter
 var fileConverter = new FileConverter();
 ```
 
-### CSV to XML Conversion
-
+#### CSV Conversions
 ```csharp
-await fileConverter.ConvertCsvToXmlAsync(
-    @"C:\Users\User\Desktop\input.csv",
-    @"C:\Users\User\Desktop\output.xml"
-);
+        // Convert CSV to PDF
+        await fileConverter.ConvertCsvToPdfAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.pdf"
+        );
+
+        // Convert CSV to JSON
+        await fileConverter.ConvertCsvToJsonAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.json"
+        );
+
+        // Convert CSV to Word
+        await fileConverter.ConvertCsvToWordAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.docx"
+        );
+
+        // Convert CSV to XML
+        await fileConverter.ConvertCsvToXmlAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.xml");
+
+        // Convert CSV to YAML
+        await fileConverter.ConvertCsvToYamlAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.yaml"
+        );
 ```
 
-### CSV to PDF Conversion
-
+#### XML Conversions
 ```csharp
-await fileConverter.ConvertCsvToPdfAsync(
-    @"C:\Users\User\Desktop\input.csv",
-    @"C:\Users\User\Desktop\output.pdf"
-);
+        // Convert XML to CSV
+        await fileConverter.ConvertXmlToCsvAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.csv"
+        );
+
+        // Convert XML to JSON
+        await fileConverter.ConvertXmlToJsonAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.json"
+        );
+
+        // Convert XML to PDF
+        await fileConverter.ConvertXmlToPdfAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.pdf"
+        );
+
+        // Convert XML to Word
+        await fileConverter.ConvertXmlToWordAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.docx"
+        );
+
+        // Convert XML to YAML
+        await fileConverter.ConvertXmlToYamlAsync(
+            @"C:\Users\User\Desktop\xml_input.xml",
+            @"C:\Users\User\Desktop\output2.yaml"
+        );
 ```
 
-### CSV to Word Conversion
+### **Stream API**
+
+Perfect for web applications, cloud services, and scenarios where you work with streams:
 
 ```csharp
-await fileConverter.ConvertCsvToWordAsync(
-    @"C:\Users\User\Desktop\input.csv",
-    @"C:\Users\User\Desktop\output.docx"
-);
+var fileConverter = new FileConverter();
+
+// Convert from stream to stream
+using var inputStream = File.OpenRead("input.csv");
+var options = new ConversionOptions 
+{ 
+    SourceFormat = "csv", 
+    TargetFormat = "json" 
+};
+
+using var outputStream = await fileConverter.ConvertStreamAsync(inputStream, options);
+
+// Convert stream to bytes (for HTTP responses)
+var pdfBytes = await fileConverter.ConvertStreamToBytesAsync(inputStream, new ConversionOptions 
+{ 
+    SourceFormat = "csv", 
+    TargetFormat = "pdf" 
+});
+
+// Convert stream to string
+var jsonString = await fileConverter.ConvertStreamToStringAsync(inputStream, new ConversionOptions 
+{ 
+    SourceFormat = "csv", 
+    TargetFormat = "json" 
+});
 ```
 
-### CSV to YAML Conversion
+#### Web API Example
+```csharp
+[HttpPost("convert")]
+public async Task<IActionResult> ConvertFile(IFormFile file, string targetFormat)
+{
+    var options = new ConversionOptions 
+    { 
+        SourceFormat = "csv", 
+        TargetFormat = targetFormat 
+    };
+    
+    using var inputStream = file.OpenReadStream();
+    var result = await fileConverter.ConvertStreamToBytesAsync(inputStream, options);
+    
+    return File(result, GetMimeType(targetFormat), $"converted.{targetFormat}");
+}
+```
+
+### **💾 In-Memory API**
+
+Work directly with data objects for maximum performance and flexibility:
 
 ```csharp
-await fileConverter.ConvertCsvToYamlAsync(
-    @"C:\Users\User\Desktop\input.csv",
-    @"C:\Users\User\Desktop\output.yaml"
-);
+var fileConverter = new FileConverter();
+
+// Create data in memory
+var csvData = new CsvData 
+{ 
+    Headers = new[] { "Name", "Age", "City" },
+    Rows = new List<string[]> 
+    {
+        new[] { "John Doe", "25", "New York" },
+        new[] { "Jane Smith", "30", "London" }
+    }
+};
 ```
 
-### CSV to JSON Conversion
-
+#### Advanced JSON Conversion
 ```csharp
-await fileConverter.ConvertCsvToJsonAsync(
-    @"C:\Users\User\Desktop\input.csv",
-    @"C:\Users\User\Desktop\output.json"
+var jsonOptions = new JsonConversionOptions 
+{ 
+    ConvertValues = true,
+    UseIndentation = true,
+    IncludeRowNumbers = true,
+    CreateNestedObjects = true,
+    NestedSeparator = ".",
+    ConvertArrays = true,
+    ArrayDelimiter = ";"
+};
+
+var json = fileConverter.ConvertCsvToJson(csvData, jsonOptions);
 ```
 
-### XML to CSV Conversion
+#### Advanced PDF Conversion
 ```csharp
-await fileConverter.ConvertXmlToCsvAsync(
-    @"C:\Users\User\Desktop\input.xml",
-    @"C:\Users\User\Desktop\output.csv"
-);
+var pdfOptions = new PdfConversionOptions 
+{ 
+    FontSize = 12f,
+    Title = "Sales Report",
+    IncludeTimestamp = true,
+    AlternateRowColors = true,
+    LandscapeOrientation = true,
+    FontFamily = "Arial"
+};
+
+var pdfBytes = fileConverter.ConvertCsvToPdf(csvData, pdfOptions);
 ```
 
-### XML to PDF Conversion
+#### Advanced Word Conversion
 ```csharp
-await fileConverter.ConvertXmlToPdfAsync(
-    @"C:\Users\User\Desktop\input.xml",
-    @"C:\Users\User\Desktop\output.pdf"
-);
+var wordOptions = new WordConversionOptions 
+{ 
+    UseTable = true,
+    FontFamily = "Calibri",
+    FontSize = 11,
+    AlternateRowColors = true,
+    PageOrientation = "Landscape"
+};
+
+var wordBytes = fileConverter.ConvertCsvToWord(csvData, wordOptions);
 ```
 
-### XML to Word Conversion
+#### Advanced XML Conversion
 ```csharp
-await fileConverter.ConvertXmlToWordAsync(
-    @"C:\Users\User\Desktop\input.xml",
-    @"C:\Users\User\Desktop\output.docx"
-);
+var xmlOptions = new XmlConversionOptions 
+{ 
+    OutputFormat = "Elements",
+    UseCData = true,
+    IncludeTimestamp = true,
+    NamingConvention = "CamelCase",
+    AddComments = true
+};
+
+var xml = fileConverter.ConvertCsvToXml(csvData, xmlOptions);
 ```
 
-### XML to YAML Conversion
+#### Advanced YAML Conversion
 ```csharp
-await fileConverter.ConvertXmlToYamlAsync(
-    @"C:\Users\User\Desktop\input.xml",
-    @"C:\Users\User\Desktop\output.yaml"
-);
+var yamlOptions = new YamlConversionOptions 
+{ 
+    Structure = "Dictionary",
+    NamingConvention = "CamelCase",
+    ConvertDataTypes = true,
+    IncludeComments = true,
+    SortKeys = true
+};
+
+var yaml = fileConverter.ConvertCsvToYaml(csvData, yamlOptions);
 ```
 
-### XML to JSON Conversion
+### **XML In-Memory Conversions**
 ```csharp
-await fileConverter.ConvertXmlToJsonAsync(
-    @"C:\Users\User\Desktop\input.xml",
-    @"C:\Users\User\Desktop\output.json"
-);
+var xmlData = new XmlData 
+{ 
+    Headers = new[] { "Product", "Price", "Category" },
+    Rows = new List<string[]> 
+    {
+        new[] { "Laptop", "999.99", "Electronics" },
+        new[] { "Book", "29.99", "Education" }
+    }
+};
+
+// Convert to different formats
+var csv = fileConverter.ConvertXmlToCsv(xmlData, new CsvConversionOptions { Delimiter = ';' });
+var json = fileConverter.ConvertXmlToJson(xmlData, new JsonConversionOptions { ConvertValues = true });
+var pdf = fileConverter.ConvertXmlToPdf(xmlData, new PdfConversionOptions { Title = "Product List" });
+var word = fileConverter.ConvertXmlToWord(xmlData, new WordConversionOptions { UseTable = true });
+var yaml = fileConverter.ConvertXmlToYaml(xmlData, new YamlConversionOptions { Structure = "Array" });
 ```
 
-## Notes
-Notes
-The CsvToXmlConverter, CsvToJsonConverter, CsvToPdfConverter, CsvToWordConverter, and CsvToYamlConverter classes read a CSV file, parse it, and write the content to an XML, JSON, PDF, Word, and YAML file respectively. The first line of the CSV file is assumed to be the header.
+## **Use Cases**
 
-The XmlToCsvConverter, XmlToJsonConverter, XmlToPdfConverter, XmlToWordConverter, and XmlToYamlConverter classes read an XML file, parse it, and write the content to a CSV, JSON, PDF, Word, and YAML file respectively. The XML file is assumed to be in the format produced by the CsvToXmlConverter.
+### **Web Applications**
+```csharp
+// ASP.NET Core file upload and conversion
+[HttpPost("upload-convert")]
+public async Task<IActionResult> UploadAndConvert(IFormFile file)
+{
+    using var stream = file.OpenReadStream();
+    var options = new ConversionOptions { SourceFormat = "csv", TargetFormat = "pdf" };
+    var result = await fileConverter.ConvertStreamToBytesAsync(stream, options);
+    return File(result, "application/pdf", "report.pdf");
+}
+```
 
-All classes handle errors such as file not found and invalid file format, and print an error message to the console.
+### **Microservices**
+```csharp
+// Convert data received from another service
+public async Task<string> ProcessDataFromService(HttpResponseMessage response)
+{
+    using var stream = await response.Content.ReadAsStreamAsync();
+    var options = new ConversionOptions { SourceFormat = "xml", TargetFormat = "json" };
+    return await fileConverter.ConvertStreamToStringAsync(stream, options);
+}
+```
 
-## Contributing
+### **Data Processing Pipelines**
+```csharp
+// Process data in memory without file I/O
+public byte[] GenerateReport(List<DataRecord> records)
+{
+    var csvData = new CsvData 
+    { 
+        Headers = new[] { "ID", "Name", "Value" },
+        Rows = records.Select(r => new[] { r.Id, r.Name, r.Value.ToString() }).ToList()
+    };
+    
+    return fileConverter.ConvertCsvToPdf(csvData, new PdfConversionOptions 
+    { 
+        Title = "Data Report",
+        IncludeTimestamp = true 
+    });
+}
+```
 
-Contributions are welcome. Please fork the repository and create a pull request with your changes.
+## **Configuration Options**
 
-## Author
+### **JsonConversionOptions**
+- `ConvertValues`: Auto-detect and convert data types
+- `UseIndentation`: Pretty-print JSON output
+- `IncludeRowNumbers`: Add row numbers to output
+- `GroupByColumn`: Group data by specific column
+- `CreateNestedObjects`: Support for nested object structures
+- `ConvertArrays`: Convert delimited values to arrays
 
-Bohdan Harabadzhyu
+### **PdfConversionOptions**
+- `FontSize`: Text font size
+- `Title`: Document title
+- `AlternateRowColors`: Zebra-striped rows
+- `LandscapeOrientation`: Page orientation
+- `IncludeTimestamp`: Add generation timestamp
 
-## License
+### **WordConversionOptions**
+- `UseTable`: Format as table vs. paragraphs
+- `FontFamily` & `FontSize`: Typography settings
+- `FormatAsHierarchy`: Hierarchical data representation
+- `AlternateRowColors`: Row styling
 
-[MIT](https://choosealicense.com/licenses/mit/)
+### **XmlConversionOptions**
+- `OutputFormat`: Elements, Attributes, Mixed, or Hierarchical
+- `UseCData`: Wrap content in CDATA sections
+- `NamingConvention`: Original, CamelCase, PascalCase, or SnakeCase
+- `IncludeMetadata`: Add conversion metadata
+
+### **YamlConversionOptions**
+- `Structure`: Array, Dictionary, Hierarchical, or Grouped
+- `ConvertDataTypes`: Auto-detect data types
+- `SortKeys`: Alphabetically sort keys
+- `IncludeComments`: Add descriptive comments
+
+## **Contributing**
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## **Author**
+
+**Bohdan Harabadzhyu**
+
+## **License**
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
