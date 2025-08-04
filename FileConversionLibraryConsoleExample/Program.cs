@@ -309,6 +309,7 @@ class Program
                 RootElementName = "Products",
                 XmlVersion = "1.0",
                 Encoding = "UTF-8"
+                // Headers and Rows will be ignored as Document takes precedence
             };
 
             // XML to CSV

@@ -18,8 +18,8 @@
         <PackageTags>file-conversion, csv, xml</PackageTags>
         <PackageReleaseNotes>Version 1.5.0:
             - (Released: 4 August 2025) - Major update with new APIs and enhanced functionality.
-            - Added Stream API for direct stream-to-stream conversions without temporary files.
-            - Introduced In-Memory conversion API for working with data objects directly.
+            - Added Stream API for direct stream-to-stream conversions without temporary files (Currently In Testing Mode).
+            - Introduced In-Memory conversion API for working with data objects directly (Currently In Testing Mode).
             - Added comprehensive strongly-typed options classes for all conversion types.
             - Enhanced performance and memory efficiency for large dataset processing.
             - Added support for web applications and microservices scenarios.

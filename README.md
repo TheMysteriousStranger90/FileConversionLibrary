@@ -5,8 +5,8 @@ A powerful .NET library for converting CSV and XML files to various formats incl
 
 ## **New Features in v1.5.0**
 
-- **Stream API**: Convert data directly from streams without temporary files
-- **In-Memory Conversion**: Work with data objects directly in memory
+- **Stream API**: Convert data directly from streams without temporary files (Currently In Testing Mode)
+- **In-Memory Conversion**: Work with data objects directly in memory (Currently In Testing Mode)
 - **Advanced Options**: Comprehensive configuration options for all formats
 - **Enhanced Performance**: Optimized for large datasets
 - **Type-Safe Configuration**: Strongly-typed options classes
@@ -87,7 +87,7 @@ var fileConverter = new FileConverter();
 
 ### **Stream API**
 
-Perfect for web applications, cloud services, and scenarios where you work with streams:
+For web applications, cloud services, and scenarios where you work with streams:
 
 ```csharp
 var fileConverter = new FileConverter();
@@ -139,11 +139,12 @@ public async Task<IActionResult> ConvertFile(IFormFile file, string targetFormat
 
 Work directly with data objects for maximum performance and flexibility:
 
+### **CSV In-Memory Conversions**
+
 ```csharp
 var fileConverter = new FileConverter();
 
-// Create data in memory
-var csvData = new CsvData 
+// Create CSV data in memory
 { 
     Headers = new[] { "Name", "Age", "City" },
     Rows = new List<string[]> 
@@ -152,10 +153,8 @@ var csvData = new CsvData
         new[] { "Jane Smith", "30", "London" }
     }
 };
-```
 
-#### Advanced JSON Conversion
-```csharp
+// Convert to different formats with advanced options
 var jsonOptions = new JsonConversionOptions 
 { 
     ConvertValues = true,
@@ -166,12 +165,8 @@ var jsonOptions = new JsonConversionOptions
     ConvertArrays = true,
     ArrayDelimiter = ";"
 };
-
 var json = fileConverter.ConvertCsvToJson(csvData, jsonOptions);
-```
 
-#### Advanced PDF Conversion
-```csharp
 var pdfOptions = new PdfConversionOptions 
 { 
     FontSize = 12f,
@@ -181,12 +176,8 @@ var pdfOptions = new PdfConversionOptions
     LandscapeOrientation = true,
     FontFamily = "Arial"
 };
-
 var pdfBytes = fileConverter.ConvertCsvToPdf(csvData, pdfOptions);
-```
 
-#### Advanced Word Conversion
-```csharp
 var wordOptions = new WordConversionOptions 
 { 
     UseTable = true,
@@ -195,12 +186,8 @@ var wordOptions = new WordConversionOptions
     AlternateRowColors = true,
     PageOrientation = "Landscape"
 };
-
 var wordBytes = fileConverter.ConvertCsvToWord(csvData, wordOptions);
-```
 
-#### Advanced XML Conversion
-```csharp
 var xmlOptions = new XmlConversionOptions 
 { 
     OutputFormat = "Elements",
@@ -209,12 +196,8 @@ var xmlOptions = new XmlConversionOptions
     NamingConvention = "CamelCase",
     AddComments = true
 };
-
 var xml = fileConverter.ConvertCsvToXml(csvData, xmlOptions);
-```
 
-#### Advanced YAML Conversion
-```csharp
 var yamlOptions = new YamlConversionOptions 
 { 
     Structure = "Dictionary",
@@ -229,22 +212,79 @@ var yaml = fileConverter.ConvertCsvToYaml(csvData, yamlOptions);
 
 ### **XML In-Memory Conversions**
 ```csharp
+
+// Create XML data in memory
+var xmlContent = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<products>
+    <product>
+        <Product>Laptop</Product>
+        <Price>999.99</Price>
+        <Category>Electronics</Category>
+    </product>
+    <product>
+        <Product>Book</Product>
+        <Price>29.99</Price>
+        <Category>Education</Category>
+    </product>
+</products>";
+
 var xmlData = new XmlData 
 { 
-    Headers = new[] { "Product", "Price", "Category" },
-    Rows = new List<string[]> 
-    {
-        new[] { "Laptop", "999.99", "Electronics" },
-        new[] { "Book", "29.99", "Education" }
-    }
+    Document = XDocument.Parse(xmlContent),
+    RootElementName = "products",
+    XmlVersion = "1.0",
+    Encoding = "UTF-8"
 };
 
-// Convert to different formats
-var csv = fileConverter.ConvertXmlToCsv(xmlData, new CsvConversionOptions { Delimiter = ';' });
-var json = fileConverter.ConvertXmlToJson(xmlData, new JsonConversionOptions { ConvertValues = true });
-var pdf = fileConverter.ConvertXmlToPdf(xmlData, new PdfConversionOptions { Title = "Product List" });
-var word = fileConverter.ConvertXmlToWord(xmlData, new WordConversionOptions { UseTable = true });
-var yaml = fileConverter.ConvertXmlToYaml(xmlData, new YamlConversionOptions { Structure = "Array" });
+// Convert to different formats with advanced options
+var csvOptions = new CsvConversionOptions 
+{ 
+    Delimiter = ';',
+    IncludeHeaders = true,
+    QuoteValues = true,
+    FlattenHierarchy = true,
+    IncludeAttributes = true
+};
+var csv = fileConverter.ConvertXmlToCsv(xmlData, csvOptions);
+
+var jsonOptions = new JsonConversionOptions 
+{ 
+    ConvertValues = true,
+    UseIndentation = true,
+    RemoveWhitespace = true
+};
+var json = fileConverter.ConvertXmlToJson(xmlData, jsonOptions);
+
+var pdfOptions = new PdfConversionOptions 
+{ 
+    Title = "Product Catalog",
+    FontSize = 10f,
+    AlternateRowColors = true,
+    IncludeTimestamp = true,
+    HierarchicalView = true
+};
+var pdf = fileConverter.ConvertXmlToPdf(xmlData, pdfOptions);
+
+var wordOptions = new WordConversionOptions 
+{ 
+    UseTable = true,
+    FontFamily = "Calibri",
+    FontSize = 11,
+    FormatAsHierarchy = true,
+    AlternateRowColors = true
+};
+var word = fileConverter.ConvertXmlToWord(xmlData, wordOptions);
+
+var yamlOptions = new YamlConversionOptions 
+{ 
+    Structure = "Dictionary",
+    ConvertDataTypes = true,
+    IncludeRootElement = true,
+    IncludeAttributes = true,
+    UseCamelCase = false,
+    SortKeys = true
+};
+var yaml = fileConverter.ConvertXmlToYaml(xmlData, yamlOptions);
 ```
 
 ## **Use Cases**
