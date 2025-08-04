@@ -6,32 +6,49 @@
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>FileConversionLibrary</PackageId>
-        <Version>1.4.0</Version>
+        <Version>1.5.0</Version>
         <Title>FileConversionLibrary</Title>
         <Authors>Bohdan Harabadzhyu</Authors>
         <Description>FileConversionLibrary is a .NET library for converting files between different formats.
             It supports converting CSV files to XML, PDF, Word, JSON, and YAML formats, as well as converting XML files to CSV, PDF, Word, JSON, and YAML formats.
             The library provides asynchronous methods for all conversions and includes comprehensive error handling.</Description>
         <RepositoryUrl>https://github.com/TheMysteriousStranger90/FileConversionLibrary</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://github.com/TheMysteriousStranger90/FileConversionLibrary</PackageProjectUrl>
         <PackageTags>file-conversion, csv, xml</PackageTags>
-        <PackageReleaseNotes>Version 1.4.0:
-            - (Released: 3 August 2025) - Enhanced CSV converters with advanced functionality matching XML converter capabilities.
-            - Significantly improved CsvToJsonConverter with support for grouped data, nested objects, array conversion, and automatic data type detection.
-            - Enhanced CsvToPdfConverter with auto-fit columns, alternate row colors, landscape orientation, row numbering, and comprehensive document metadata.
-            - Upgraded CsvToWordConverter with hierarchical data representation, customizable table styles, alternate row colors, page orientation settings, and statistical summaries.
-            - Completely rewritten CsvToXmlConverter with multiple output formats (elements, attributes, mixed, hierarchical), custom naming conventions, data grouping, sorting capabilities, and flexible metadata control.
-            - New advanced CsvToYamlConverter with multiple structure formats (array, dictionary, hierarchical, grouped), smart data type conversion, multiline text handling, and comprehensive formatting options.
-            - Improved all CSV converters with consistent option handling, extensive customization parameters, and robust error handling.
-            - Enhanced data type detection and conversion across all formats with support for dates, numbers, booleans, and arrays.
-            - Implemented advanced features like data grouping, sorting, filtering, and hierarchical representation.
-            - Significantly improved code maintainability and consistency across all converter classes.
-            - Fixed XML output generation to exclude unnecessary comments and metadata by default while maintaining backward compatibility.
+        <PackageReleaseNotes>Version 1.5.0:
+            - (Released: 4 August 2025) - Major update with new APIs and enhanced functionality.
+            - Added Stream API for direct stream-to-stream conversions without temporary files (Currently In Testing Mode).
+            - Introduced In-Memory conversion API for working with data objects directly (Currently In Testing Mode).
+            - Added comprehensive strongly-typed options classes for all conversion types.
             - Enhanced performance and memory efficiency for large dataset processing.
+            - Added support for web applications and microservices scenarios.
+            - Implemented advanced configuration options for all output formats.
         </PackageReleaseNotes>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageIcon>Cover.png</PackageIcon>
+        
+        <AssemblyTitle>FileConversionLibrary</AssemblyTitle>
+        <AssemblyDescription>Advanced file format conversion library for .NET</AssemblyDescription>
+        <AssemblyCompany>Bohdan Harabadzhyu</AssemblyCompany>
+        <AssemblyProduct>FileConversionLibrary</AssemblyProduct>
+        <AssemblyCopyright>Copyright © 2025 Bohdan Harabadzhyu</AssemblyCopyright>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <FileVersion>1.5.0.0</FileVersion>
+        
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+        <WarningsAsErrors />
+
+        <Optimize>true</Optimize>
+        <DebugType>portable</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+
+        <LangVersion>latest</LangVersion>
+        <Features>strict</Features>
     </PropertyGroup>
 
     <ItemGroup>

@@ -10,7 +10,7 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
 {
     public string Convert(XmlData input, object? options = null)
     {
-        if (input?.Document == null)
+        if (input?.Document?.Root == null)
         {
             throw new ArgumentException("Invalid XML data or missing XDocument");
         }
@@ -18,6 +18,7 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
         bool useCamelCase = false;
         bool convertValues = true;
         bool keepStringsForNumbers = false;
+        bool includeRootElement = true;
         
         if (options is Dictionary<string, object> optionsDict)
         {
@@ -35,6 +36,11 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
             {
                 keepStringsForNumbers = keepStringsValue;
             }
+            
+            if (optionsDict.TryGetValue("includeRootElement", out var includeRoot) && includeRoot is bool includeRootValue)
+            {
+                includeRootElement = includeRootValue;
+            }
         }
         
         INamingConvention namingConvention = useCamelCase 
@@ -48,37 +54,41 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
             
         var serializer = serializerBuilder.Build();
         
-        var yamlObject = ConvertXmlToObject(input.Document.Root, convertValues, keepStringsForNumbers);
+        object yamlObject;
+        
+        if (includeRootElement)
+        {
+            yamlObject = ConvertXmlElementWithRoot(input.Document.Root, convertValues, keepStringsForNumbers);
+        }
+        else
+        {
+            yamlObject = ConvertXmlToObject(input.Document.Root, convertValues, keepStringsForNumbers);
+        }
         
         return serializer.Serialize(yamlObject);
+    }
+    
+    private object ConvertXmlElementWithRoot(XElement rootElement, bool convertValues, bool keepStringsForNumbers)
+    {
+        var rootName = rootElement.Name.LocalName;
+        var rootContent = ConvertXmlToObject(rootElement, convertValues, keepStringsForNumbers);
+        
+        return new Dictionary<string, object>
+        {
+            [rootName] = rootContent
+        };
     }
     
     private object ConvertXmlToObject(XElement element, bool convertValues, bool keepStringsForNumbers)
     {
         if (!element.HasElements && !string.IsNullOrEmpty(element.Value))
         {
-            string value = element.Value.Trim();
-            
-            if (convertValues && !keepStringsForNumbers)
-            {
-                if (int.TryParse(value, out int intValue))
-                {
-                    return intValue;
-                }
-                
-                if (double.TryParse(value, System.Globalization.NumberStyles.Any, 
-                        System.Globalization.CultureInfo.InvariantCulture, out double doubleValue))
-                {
-                    return doubleValue;
-                }
-                
-                if (bool.TryParse(value, out bool boolValue))
-                {
-                    return boolValue;
-                }
-            }
-            
-            return value;
+            return ConvertValue(element.Value.Trim(), convertValues, keepStringsForNumbers);
+        }
+        
+        if (!element.HasElements && string.IsNullOrEmpty(element.Value))
+        {
+            return string.Empty;
         }
         
         var childGroups = element.Elements()
@@ -86,6 +96,12 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
             .ToDictionary(g => g.Key, g => g.ToList());
         
         var result = new Dictionary<string, object>();
+        
+        foreach (var attr in element.Attributes())
+        {
+            var attrName = $"@{attr.Name.LocalName}";
+            result[attrName] = ConvertValue(attr.Value, convertValues, keepStringsForNumbers);
+        }
         
         foreach (var group in childGroups)
         {
@@ -95,39 +111,7 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
             if (elements.Count == 1)
             {
                 var childElement = elements[0];
-                
-                if (childElement.HasElements)
-                {
-                    result[name] = ConvertXmlToObject(childElement, convertValues, keepStringsForNumbers);
-                }
-                else
-                {
-                    string value = childElement.Value.Trim();
-                    
-                    if (convertValues && !keepStringsForNumbers)
-                    {
-                        if (int.TryParse(value, out int intValue))
-                        {
-                            result[name] = intValue;
-                            continue;
-                        }
-                        
-                        if (double.TryParse(value, System.Globalization.NumberStyles.Any, 
-                                System.Globalization.CultureInfo.InvariantCulture, out double doubleValue))
-                        {
-                            result[name] = doubleValue;
-                            continue;
-                        }
-                        
-                        if (bool.TryParse(value, out bool boolValue))
-                        {
-                            result[name] = boolValue;
-                            continue;
-                        }
-                    }
-                    
-                    result[name] = value;
-                }
+                result[name] = ConvertXmlToObject(childElement, convertValues, keepStringsForNumbers);
             }
             else
             {
@@ -135,38 +119,7 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
                 
                 foreach (var childElement in elements)
                 {
-                    if (childElement.HasElements)
-                    {
-                        array.Add(ConvertXmlToObject(childElement, convertValues, keepStringsForNumbers));
-                    }
-                    else
-                    {
-                        string value = childElement.Value.Trim();
-                        
-                        if (convertValues && !keepStringsForNumbers)
-                        {
-                            if (int.TryParse(value, out int intValue))
-                            {
-                                array.Add(intValue);
-                                continue;
-                            }
-                            
-                            if (double.TryParse(value, System.Globalization.NumberStyles.Any, 
-                                    System.Globalization.CultureInfo.InvariantCulture, out double doubleValue))
-                            {
-                                array.Add(doubleValue);
-                                continue;
-                            }
-                            
-                            if (bool.TryParse(value, out bool boolValue))
-                            {
-                                array.Add(boolValue);
-                                continue;
-                            }
-                        }
-                        
-                        array.Add(value);
-                    }
+                    array.Add(ConvertXmlToObject(childElement, convertValues, keepStringsForNumbers));
                 }
                 
                 result[name] = array;
@@ -174,5 +127,41 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
         }
         
         return result;
+    }
+    
+    private object ConvertValue(string value, bool convertValues, bool keepStringsForNumbers)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+        
+        value = value.Trim();
+        
+        if (!convertValues || keepStringsForNumbers)
+        {
+            return value;
+        }
+        
+        if (!value.StartsWith("$") && !value.StartsWith("€") && !value.StartsWith("£"))
+        {
+            if (int.TryParse(value, out int intValue))
+            {
+                return intValue;
+            }
+            
+            if (double.TryParse(value, System.Globalization.NumberStyles.Any, 
+                    System.Globalization.CultureInfo.InvariantCulture, out double doubleValue))
+            {
+                return doubleValue;
+            }
+        }
+        
+        if (bool.TryParse(value, out bool boolValue))
+        {
+            return boolValue;
+        }
+        
+        return value;
     }
 }

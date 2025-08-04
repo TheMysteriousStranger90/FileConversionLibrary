@@ -4,6 +4,7 @@ using FileConversionLibrary.Exceptions;
 using FileConversionLibrary.Factories;
 using FileConversionLibrary.Interfaces;
 using FileConversionLibrary.Models;
+using FileConversionLibrary.Models.Options;
 using FileConversionLibrary.Readers;
 using FileConversionLibrary.Writers;
 using iTextSharp.text;
@@ -22,7 +23,9 @@ public class FileConverter
     private readonly IFileWriter<byte[]> _pdfWriter;
     private readonly IFileWriter<byte[]> _wordWriter;
     private readonly ConverterFactory _converterFactory;
-
+    private readonly IStreamConverter _streamConverter;
+    private readonly IInMemoryConverter _inMemoryConverter;
+    
     private static FileConverter? _instance;
 
     public FileConverter()
@@ -37,6 +40,9 @@ public class FileConverter
         _xmlReader = new XmlFileReader(_exceptionHandler);
         _csvWriter = new CsvFileWriter(_exceptionHandler);
         _converterFactory = new ConverterFactory();
+        
+        _inMemoryConverter = new InMemoryConverter(_converterFactory, _exceptionHandler);
+        _streamConverter = new StreamConverter(_inMemoryConverter, _exceptionHandler);
     }
 
     public FileConverter(
@@ -463,5 +469,73 @@ public class FileConverter
             _exceptionHandler?.Handle(ex);
             throw new FileConversionException($"Failed to convert {xmlFilePath} to {yamlOutputPath}", ex);
         }
+    }
+    
+    
+    
+    
+    public async Task<Stream> ConvertStreamAsync(Stream input, ConversionOptions options)
+    {
+        return await _streamConverter.ConvertAsync(input, options);
+    }
+
+    public async Task<byte[]> ConvertStreamToBytesAsync(Stream input, ConversionOptions options)
+    {
+        return await _streamConverter.ConvertToBytesAsync(input, options);
+    }
+
+    public async Task<string> ConvertStreamToStringAsync(Stream input, ConversionOptions options)
+    {
+        return await _streamConverter.ConvertToStringAsync(input, options);
+    }
+
+    public string ConvertCsvToJson(CsvData data, JsonConversionOptions? options = null)
+    {
+        return _inMemoryConverter.ConvertCsvToJson(data, options);
+    }
+
+    public byte[] ConvertCsvToPdf(CsvData data, PdfConversionOptions? options = null)
+    {
+        return _inMemoryConverter.ConvertCsvToPdf(data, options);
+    }
+
+    public byte[] ConvertCsvToWord(CsvData data, WordConversionOptions? options = null)
+    {
+        return _inMemoryConverter.ConvertCsvToWord(data, options);
+    }
+
+    public string ConvertCsvToXml(CsvData data, XmlConversionOptions? options = null)
+    {
+        return _inMemoryConverter.ConvertCsvToXml(data, options);
+    }
+
+    public string ConvertCsvToYaml(CsvData data, YamlConversionOptions? options = null)
+    {
+        return _inMemoryConverter.ConvertCsvToYaml(data, options);
+    }
+    
+    public string ConvertXmlToCsv(XmlData data, CsvConversionOptions? options = null)
+    {
+        return _inMemoryConverter.ConvertXmlToCsv(data, options);
+    }
+
+    public string ConvertXmlToJson(XmlData data, JsonConversionOptions? options = null)
+    {
+        return _inMemoryConverter.ConvertXmlToJson(data, options);
+    }
+
+    public byte[] ConvertXmlToPdf(XmlData data, PdfConversionOptions? options = null)
+    {
+        return _inMemoryConverter.ConvertXmlToPdf(data, options);
+    }
+
+    public byte[] ConvertXmlToWord(XmlData data, WordConversionOptions? options = null)
+    {
+        return _inMemoryConverter.ConvertXmlToWord(data, options);
+    }
+
+    public string ConvertXmlToYaml(XmlData data, YamlConversionOptions? options = null)
+    {
+        return _inMemoryConverter.ConvertXmlToYaml(data, options);
     }
 }
