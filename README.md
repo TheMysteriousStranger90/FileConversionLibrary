@@ -1,7 +1,7 @@
 # File Conversion Library
 ![Image 1](Screenshots/Screen1.png)
 
-A powerful .NET library for converting CSV and XML files to various formats including XML, PDF, Word, JSON, and YAML. Now with enhanced Stream API and In-Memory conversion capabilities!
+A .NET library for converting CSV and XML files to various formats including XML, PDF, Word, JSON, and YAML. Now with enhanced Stream API and In-Memory conversion capabilities!
 
 ## **New Features in v1.5.0**
 
@@ -135,7 +135,7 @@ public async Task<IActionResult> ConvertFile(IFormFile file, string targetFormat
 }
 ```
 
-### **💾 In-Memory API**
+### **In-Memory API**
 
 Work directly with data objects for maximum performance and flexibility:
 
@@ -373,7 +373,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## **Author**
 
-**Bohdan Harabadzhyu**
+Bohdan Harabadzhyu
 
 ## **License**
 

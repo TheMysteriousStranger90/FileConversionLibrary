@@ -60,18 +60,38 @@ public class XmlToCsvConverter : IConverter<XmlData, string>
         bool flattenHierarchy = true;
         string? customNullValue = null;
 
-        ParseOptions(options, ref delimiter, ref quoteValues, ref includeHeaders, 
-                    ref flattenHierarchy, ref customNullValue);
+        ParseOptions(options, ref delimiter, ref quoteValues, ref includeHeaders,
+            ref flattenHierarchy, ref customNullValue);
 
         var root = input.Document.Root;
-        var recordElements = root.Elements().ToList();
+        List<XElement> recordElements;
+        bool isComplexStructure = false;
+
+        recordElements = root.Elements().ToList();
         
         if (!recordElements.Any())
         {
             throw new ArgumentException("No record elements found in XML data");
         }
 
-        var headers = ExtractHeaders(recordElements, flattenHierarchy);
+        if (recordElements.Any(e => e.HasElements) && 
+            recordElements.Select(e => e.Name.LocalName).Distinct().Count() > 1)
+        {
+            isComplexStructure = true;
+            recordElements = new List<XElement> { root };
+        }
+
+        bool isSingleRecord = recordElements.Select(e => e.Name.LocalName).Distinct().Count() == recordElements.Count();
+
+        List<string> headers;
+        if (isComplexStructure || isSingleRecord)
+        {
+            headers = ExtractFlattenedHeaders(recordElements, flattenHierarchy);
+        }
+        else
+        {
+            headers = ExtractHeaders(recordElements, flattenHierarchy);
+        }
         
         if (!headers.Any())
         {
@@ -87,26 +107,172 @@ public class XmlToCsvConverter : IConverter<XmlData, string>
             sb.AppendLine(headerLine);
         }
 
-        foreach (var record in recordElements)
+        if (isComplexStructure || isSingleRecord)
         {
-            var values = new List<string>();
-            
-            foreach (var header in headers)
+            foreach (var record in recordElements)
             {
-                var value = ExtractValue(record, header, flattenHierarchy);
+                var values = new List<string>();
                 
-                if (string.IsNullOrEmpty(value) && customNullValue != null)
+                foreach (var header in headers)
                 {
-                    value = customNullValue;
+                    string? value;
+                    
+                    if (header.StartsWith("@"))
+                    {
+                        var attrName = header.Substring(1);
+                        value = record.Attribute(attrName)?.Value;
+                    }
+                    else if (header.Contains("."))
+                    {
+                        value = ExtractValueFromPath(record, header);
+                    }
+                    else
+                    {
+                        var element = record.Element(header);
+                        if (element != null)
+                        {
+                            var cdata = element.Nodes().OfType<XCData>().FirstOrDefault();
+                            if (cdata != null)
+                            {
+                                value = cdata.Value;
+                            }
+                            else
+                            {
+                                value = element.Value;
+                            }
+                        }
+                        else
+                        {
+                            value = null;
+                        }
+                    }
+                    
+                    if (string.IsNullOrEmpty(value) && customNullValue != null)
+                    {
+                        value = customNullValue;
+                    }
+                    
+                    values.Add(quoteValues ? QuoteValue(value ?? string.Empty, delimiter) : (value ?? string.Empty));
                 }
                 
-                values.Add(quoteValues ? QuoteValue(value ?? string.Empty, delimiter) : (value ?? string.Empty));
+                sb.AppendLine(string.Join(delimiter.ToString(), values));
             }
-            
-            sb.AppendLine(string.Join(delimiter.ToString(), values));
+        }
+        else
+        {
+            foreach (var record in recordElements)
+            {
+                var values = new List<string>();
+                
+                foreach (var header in headers)
+                {
+                    var value = ExtractValue(record, header, flattenHierarchy);
+                    
+                    if (string.IsNullOrEmpty(value) && customNullValue != null)
+                    {
+                        value = customNullValue;
+                    }
+                    
+                    values.Add(quoteValues ? QuoteValue(value ?? string.Empty, delimiter) : (value ?? string.Empty));
+                }
+                
+                sb.AppendLine(string.Join(delimiter.ToString(), values));
+            }
         }
 
         return sb.ToString();
+    }
+
+    private List<string> ExtractFlattenedHeaders(List<XElement> elements, bool flattenHierarchy)
+    {
+        var headers = new HashSet<string>();
+        
+        foreach (var element in elements)
+        {
+            foreach (var attr in element.Attributes().Where(a => !a.IsNamespaceDeclaration))
+            {
+                headers.Add($"@{attr.Name.LocalName}");
+            }
+            
+            ExtractHeadersFromElement(element, headers, "", flattenHierarchy);
+        }
+        
+        return headers.OrderBy(h => h).ToList();
+    }
+    
+    private void ExtractHeadersFromElement(XElement element, HashSet<string> headers, string prefix, bool flattenHierarchy)
+    {
+        foreach (var child in element.Elements())
+        {
+            string childName = child.Name.LocalName;
+            string headerName = string.IsNullOrEmpty(prefix) ? childName : $"{prefix}.{childName}";
+            
+            if (!child.HasElements || (!flattenHierarchy && !string.IsNullOrEmpty(child.Value.Trim())))
+            {
+                headers.Add(headerName);
+            }
+            
+            foreach (var attr in child.Attributes().Where(a => !a.IsNamespaceDeclaration))
+            {
+                headers.Add($"{headerName}.@{attr.Name.LocalName}");
+            }
+            
+            if (child.HasElements && flattenHierarchy)
+            {
+                ExtractHeadersFromElement(child, headers, headerName, flattenHierarchy);
+            }
+            else if (child.HasElements)
+            {
+                headers.Add(headerName);
+            }
+        }
+    }
+    
+    private string? ExtractValueFromPath(XElement element, string path)
+    {
+        string[] parts = path.Split('.');
+        XElement? current = element;
+        
+        for (int i = 0; i < parts.Length - 1; i++)
+        {
+            string part = parts[i];
+            
+            if (part.StartsWith("@"))
+            {
+                return null;
+            }
+            
+            current = current?.Element(part);
+            
+            if (current == null)
+            {
+                return null;
+            }
+        }
+        
+        string lastPart = parts[parts.Length - 1];
+        
+        if (lastPart.StartsWith("@"))
+        {
+            string attrName = lastPart.Substring(1);
+            return current?.Attribute(attrName)?.Value;
+        }
+        else
+        {
+            var targetElement = current?.Element(lastPart);
+            if (targetElement == null)
+            {
+                return null;
+            }
+            
+            var cdata = targetElement.Nodes().OfType<XCData>().FirstOrDefault();
+            if (cdata != null)
+            {
+                return cdata.Value;
+            }
+            
+            return targetElement.Value;
+        }
     }
 
     private string ConvertFromTabularData(XmlData input, object? options)
@@ -127,8 +293,8 @@ public class XmlToCsvConverter : IConverter<XmlData, string>
         bool flattenHierarchy = false;
         string? customNullValue = null;
 
-        ParseOptions(options, ref delimiter, ref quoteValues, ref includeHeaders, 
-                    ref flattenHierarchy, ref customNullValue);
+        ParseOptions(options, ref delimiter, ref quoteValues, ref includeHeaders,
+            ref flattenHierarchy, ref customNullValue);
 
         var sb = new StringBuilder();
 
@@ -168,8 +334,8 @@ public class XmlToCsvConverter : IConverter<XmlData, string>
         return sb.ToString();
     }
 
-    private void ParseOptions(object? options, ref char delimiter, ref bool quoteValues, 
-                             ref bool includeHeaders, ref bool flattenHierarchy, ref string? customNullValue)
+    private void ParseOptions(object? options, ref char delimiter, ref bool quoteValues,
+        ref bool includeHeaders, ref bool flattenHierarchy, ref string? customNullValue)
     {
         if (options is char delimiterChar)
         {
@@ -269,6 +435,16 @@ public class XmlToCsvConverter : IConverter<XmlData, string>
         if (!flattenHierarchy || !path.Contains("."))
         {
             var element = record.Element(path);
+            
+            if (element != null)
+            {
+                var cdata = element.Nodes().OfType<XCData>().FirstOrDefault();
+                if (cdata != null)
+                {
+                    return cdata.Value;
+                }
+            }
+            
             return element?.Value;
         }
 
@@ -292,6 +468,12 @@ public class XmlToCsvConverter : IConverter<XmlData, string>
                     return null;
                 }
             }
+        }
+        
+        var cdataNode = current.Nodes().OfType<XCData>().FirstOrDefault();
+        if (cdataNode != null)
+        {
+            return cdataNode.Value;
         }
 
         return current?.Value;

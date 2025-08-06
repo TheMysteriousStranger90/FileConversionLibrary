@@ -10,7 +10,7 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
 {
     public byte[] Convert(XmlData input, object? options = null)
     {
-        if (input?.Headers == null || input.Rows == null)
+        if (input?.Document == null)
         {
             throw new ArgumentException("Invalid XML data");
         }
@@ -22,6 +22,8 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
         BaseColor headerBackgroundColor = BaseColor.LIGHT_GRAY;
         float tablePadding = 5f;
         float[]? columnWidths = null;
+        bool includeCData = true;
+        bool includeComments = false;
 
         if (options is Dictionary<string, object> optionsDict)
         {
@@ -60,6 +62,16 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
             {
                 columnWidths = widthsArray;
             }
+            
+            if (optionsDict.TryGetValue("includeCData", out var cdata) && cdata is bool cdataValue)
+            {
+                includeCData = cdataValue;
+            }
+            
+            if (optionsDict.TryGetValue("includeComments", out var comments) && comments is bool commentsValue)
+            {
+                includeComments = commentsValue;
+            }
         }
 
         using (var memoryStream = new MemoryStream())
@@ -78,6 +90,8 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
 
             var font = FontFactory.GetFont(FontFactory.HELVETICA, fontSize);
             var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, fontSize);
+            var cdataFont = FontFactory.GetFont(FontFactory.COURIER, fontSize - 0.5f);
+            var commentFont = FontFactory.GetFont(FontFactory.HELVETICA_OBLIQUE, fontSize - 0.5f);
 
             if (hierarchicalView && input.Document?.Root != null)
             {
@@ -87,9 +101,10 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
                 title.SpacingAfter = 20f;
                 document.Add(title);
 
-                AddHierarchicalContent(document, input.Document.Root, font);
+                AddHierarchicalContent(document, input.Document.Root, font, cdataFont, commentFont, 
+                    includeCData, includeComments);
             }
-            else
+            else if (input.Headers != null && input.Rows != null && input.Headers.Length > 0)
             {
                 var table = new PdfPTable(input.Headers.Length);
                 table.WidthPercentage = 100;
@@ -156,6 +171,21 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
 
                 document.Add(table);
             }
+            else
+            {
+                document.Add(new Paragraph("XML Structure (Hierarchical View):", headerFont));
+                document.Add(new Paragraph(" "));
+                
+                if (input.Document?.Root != null)
+                {
+                    AddHierarchicalContent(document, input.Document.Root, font, cdataFont, commentFont, 
+                        includeCData, includeComments);
+                }
+                else
+                {
+                    document.Add(new Paragraph("No valid XML structure found.", font));
+                }
+            }
 
             document.Close();
 
@@ -163,7 +193,8 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
         }
     }
 
-    private void AddHierarchicalContent(Document document, XElement element, Font font, int level = 0)
+    private void AddHierarchicalContent(Document document, XElement element, Font font, Font cdataFont, 
+        Font commentFont, bool includeCData, bool includeComments, int level = 0)
     {
         string indent = new string(' ', level * 4);
 
@@ -178,6 +209,15 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
             foreach (var attr in element.Attributes().Where(a => !a.IsNamespaceDeclaration))
             {
                 document.Add(new Paragraph($"{indent}  @{attr.Name.LocalName}: {attr.Value}", attrFont));
+            }
+        }
+
+        if (includeComments)
+        {
+            var comments = element.Nodes().OfType<XComment>().ToList();
+            foreach (var comment in comments)
+            {
+                document.Add(new Paragraph($"{indent}  <!-- {comment.Value} -->", commentFont));
             }
         }
 
@@ -196,19 +236,30 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
             document.Add(new Paragraph($"{indent}  Value: {textValue}", font));
         }
 
-        var cdataValue = element.Nodes().OfType<XCData>()
-            .Select(c => c.Value.Trim())
-            .FirstOrDefault();
-
-        if (!string.IsNullOrEmpty(cdataValue))
+        if (includeCData)
         {
-            var cdataFont = FontFactory.GetFont(FontFactory.COURIER, font.Size - 0.5f);
-            document.Add(new Paragraph($"{indent}  CDATA: {cdataValue}", cdataFont));
+            var cdataValue = element.Nodes().OfType<XCData>()
+                .Select(c => c.Value.Trim())
+                .FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(cdataValue))
+            {
+                var cdataText = $"{indent}  CDATA:";
+                document.Add(new Paragraph(cdataText, font));
+                
+                var cdataLines = cdataValue.Split('\n');
+                foreach (var line in cdataLines)
+                {
+                    var trimmedLine = line.TrimStart();
+                    document.Add(new Paragraph($"{indent}    {trimmedLine}", cdataFont));
+                }
+            }
         }
 
         foreach (var child in element.Elements())
         {
-            AddHierarchicalContent(document, child, font, level + 1);
+            AddHierarchicalContent(document, child, font, cdataFont, commentFont, 
+                includeCData, includeComments, level + 1);
         }
     }
 }

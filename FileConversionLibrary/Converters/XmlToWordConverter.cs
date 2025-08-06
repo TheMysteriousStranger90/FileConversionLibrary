@@ -1,5 +1,4 @@
-﻿using System.IO;
-using DocumentFormat.OpenXml;
+﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using FileConversionLibrary.Interfaces;
@@ -11,7 +10,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
 {
     public byte[] Convert(XmlData input, object? options = null)
     {
-        if (input?.Headers == null || input.Rows == null)
+        if (input?.Document == null)
         {
             throw new ArgumentException("Invalid XML data");
         }
@@ -21,6 +20,8 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
         bool formatAsHierarchy = false;
         string fontFamily = "Calibri";
         int fontSize = 11;
+        bool includeCData = true;
+        bool includeComments = false;
 
         if (options is Dictionary<string, object> optionsDict)
         {
@@ -48,6 +49,16 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
             {
                 formatAsHierarchy = hierarchyValue;
             }
+            
+            if (optionsDict.TryGetValue("includeCData", out var cdata) && cdata is bool cdataValue)
+            {
+                includeCData = cdataValue;
+            }
+            
+            if (optionsDict.TryGetValue("includeComments", out var comments) && comments is bool commentsValue)
+            {
+                includeComments = commentsValue;
+            }
         }
 
         using (var ms = new MemoryStream())
@@ -71,16 +82,29 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
                 
                 if (formatAsHierarchy && input.Document?.Root != null)
                 {
-                    AddHierarchicalContent(body, input.Document.Root, fontFamily, fontSize);
+                    AddHierarchicalContent(body, input.Document.Root, fontFamily, fontSize, 
+                        includeCData, includeComments);
                 }
-                else if (useTable)
+                else if (useTable && input.Headers != null && input.Rows != null && input.Headers.Length > 0)
                 {
                     var table = CreateTable(input, fontFamily, fontSize, addHeaderRow);
                     body.Append(table);
                 }
-                else
+                else if (input.Headers != null && input.Rows != null && input.Headers.Length > 0)
                 {
                     AddSimpleContent(body, input, fontFamily, fontSize);
+                }
+                else if (input.Document?.Root != null)
+                {
+                    var fallbackHeader = body.AppendChild(new Paragraph(
+                        new ParagraphProperties(new ParagraphStyleId { Val = "Heading1" }),
+                        new Run(
+                            new Text("XML Structure (Hierarchical View)")
+                        )
+                    ));
+                    
+                    AddHierarchicalContent(body, input.Document.Root, fontFamily, fontSize, 
+                        includeCData, includeComments);
                 }
                 
                 mainPart.Document.Save();
@@ -106,7 +130,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
             )
         );
         
-        if (addHeaderRow)
+        if (addHeaderRow && input.Headers != null)
         {
             var headerRow = new TableRow();
 
@@ -137,31 +161,34 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
             table.Append(headerRow);
         }
         
-        foreach (var rowData in input.Rows)
+        if (input.Rows != null)
         {
-            var tableRow = new TableRow();
-
-            for (int i = 0; i < rowData.Length && i < input.Headers.Length; i++)
+            foreach (var rowData in input.Rows)
             {
-                var cellText = rowData[i] ?? string.Empty;
-                
-                cellText = new string(cellText.Where(c => !char.IsControl(c)).ToArray());
+                var tableRow = new TableRow();
 
-                var cell = new TableCell(
-                    new Paragraph(
-                        new Run(
-                            new RunProperties(
-                                new RunFonts { Ascii = fontFamily },
-                                new FontSize { Val = (fontSize * 2).ToString() }
-                            ),
-                            new Text(cellText)
+                for (int i = 0; i < rowData.Length && i < (input.Headers?.Length ?? 0); i++)
+                {
+                    var cellText = rowData[i] ?? string.Empty;
+                    
+                    cellText = new string(cellText.Where(c => !char.IsControl(c)).ToArray());
+
+                    var cell = new TableCell(
+                        new Paragraph(
+                            new Run(
+                                new RunProperties(
+                                    new RunFonts { Ascii = fontFamily },
+                                    new FontSize { Val = (fontSize * 2).ToString() }
+                                ),
+                                new Text(cellText)
+                            )
                         )
-                    )
-                );
-                tableRow.Append(cell);
-            }
+                    );
+                    tableRow.Append(cell);
+                }
 
-            table.Append(tableRow);
+                table.Append(tableRow);
+            }
         }
 
         return table;
@@ -169,7 +196,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
     
     private void AddSimpleContent(Body body, XmlData input, string fontFamily, int fontSize)
     {
-        var headers = string.Join(", ", input.Headers.Select(h => h ?? string.Empty));
+        var headers = string.Join(", ", input.Headers?.Select(h => h ?? string.Empty) ?? Array.Empty<string>());
 
         var headerPara = body.AppendChild(new Paragraph());
         var headerRun = headerPara.AppendChild(new Run(
@@ -181,26 +208,29 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
         ));
         headerRun.AppendChild(new Text("Headers: " + headers));
         
-        foreach (var row in input.Rows)
+        if (input.Rows != null)
         {
-            var cleanRow = row.Select(cell => cell ?? string.Empty)
-                .Select(cell => new string(cell.Where(c => !char.IsControl(c)).ToArray()));
+            foreach (var row in input.Rows)
+            {
+                var cleanRow = row.Select(cell => cell ?? string.Empty)
+                    .Select(cell => new string(cell.Where(c => !char.IsControl(c)).ToArray()));
 
-            var rowText = string.Join(", ", cleanRow);
+                var rowText = string.Join(", ", cleanRow);
 
-            var para = body.AppendChild(new Paragraph());
-            var run = para.AppendChild(new Run(
-                new RunProperties(
-                    new RunFonts { Ascii = fontFamily },
-                    new FontSize { Val = (fontSize * 2).ToString() }
-                )
-            ));
-            run.AppendChild(new Text(rowText));
+                var para = body.AppendChild(new Paragraph());
+                var run = para.AppendChild(new Run(
+                    new RunProperties(
+                        new RunFonts { Ascii = fontFamily },
+                        new FontSize { Val = (fontSize * 2).ToString() }
+                    )
+                ));
+                run.AppendChild(new Text(rowText));
+            }
         }
     }
     
     private void AddHierarchicalContent(Body body, System.Xml.Linq.XElement element, string fontFamily, int fontSize,
-        int level = 0)
+        bool includeCData, bool includeComments, int level = 0)
     {
         string headingStyle = level == 0 ? "Heading1" : "Heading" + Math.Min(level + 1, 9);
 
@@ -232,6 +262,29 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
             ));
         }
         
+        if (includeComments)
+        {
+            var comments = element.Nodes().OfType<System.Xml.Linq.XComment>().ToList();
+            foreach (var comment in comments)
+            {
+                var commentPara = body.AppendChild(new Paragraph(
+                    new ParagraphProperties(
+                        new Indentation { Left = ((level + 1) * 360).ToString() },
+                        new ParagraphStyleId { Val = "Comment" }
+                    ),
+                    new Run(
+                        new RunProperties(
+                            new RunFonts { Ascii = fontFamily },
+                            new FontSize { Val = (fontSize * 2).ToString() },
+                            new Italic(),
+                            new Color { Val = "808080" }
+                        ),
+                        new Text($"<!-- {comment.Value} -->")
+                    )
+                ));
+            }
+        }
+        
         string? textContent = element.Nodes()
             .OfType<System.Xml.Linq.XText>()
             .Where(t => !string.IsNullOrWhiteSpace(t.Value))
@@ -256,9 +309,56 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
             ));
         }
         
+        if (includeCData)
+        {
+            var cdataContent = element.Nodes()
+                .OfType<System.Xml.Linq.XCData>()
+                .Select(c => c.Value)
+                .FirstOrDefault();
+                
+            if (!string.IsNullOrEmpty(cdataContent))
+            {
+                var cdataHeaderPara = body.AppendChild(new Paragraph(
+                    new ParagraphProperties(
+                        new Indentation { Left = ((level + 1) * 360).ToString() }
+                    ),
+                    new Run(
+                        new RunProperties(
+                            new RunFonts { Ascii = fontFamily },
+                            new FontSize { Val = (fontSize * 2).ToString() },
+                            new Bold()
+                        ),
+                        new Text("CDATA:")
+                    )
+                ));
+                
+                var cdataLines = cdataContent.Split('\n');
+                foreach (var line in cdataLines)
+                {
+                    var trimmedLine = line.TrimStart();
+                    if (!string.IsNullOrWhiteSpace(trimmedLine))
+                    {
+                        var cdataLinePara = body.AppendChild(new Paragraph(
+                            new ParagraphProperties(
+                                new Indentation { Left = ((level + 1) * 480).ToString() },
+                                new ParagraphStyleId { Val = "Code" }
+                            ),
+                            new Run(
+                                new RunProperties(
+                                    new RunFonts { Ascii = "Courier New" },
+                                    new FontSize { Val = (fontSize * 2).ToString() }
+                                ),
+                                new Text(trimmedLine)
+                            )
+                        ));
+                    }
+                }
+            }
+        }
+        
         foreach (var child in element.Elements())
         {
-            AddHierarchicalContent(body, child, fontFamily, fontSize, level + 1);
+            AddHierarchicalContent(body, child, fontFamily, fontSize, includeCData, includeComments, level + 1);
         }
     }
 
@@ -301,6 +401,39 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
         titleStyle.Append(titleRunProps);
 
         styles.Append(titleStyle);
+        
+        var codeStyle = new Style
+        {
+            Type = StyleValues.Paragraph,
+            StyleId = "Code"
+        };
+        codeStyle.Append(new StyleName { Val = "Code" });
+        codeStyle.Append(new BasedOn { Val = "Normal" });
+        
+        var codeRunProps = new StyleRunProperties();
+        codeRunProps.Append(new RunFonts { Ascii = "Courier New" });
+        codeStyle.Append(codeRunProps);
+        
+        var codeParaProps = new StyleParagraphProperties();
+        codeParaProps.Append(new SpacingBetweenLines { Before = "120", After = "120" });
+        codeStyle.Append(codeParaProps);
+        
+        styles.Append(codeStyle);
+        
+        var commentStyle = new Style
+        {
+            Type = StyleValues.Paragraph,
+            StyleId = "Comment"
+        };
+        commentStyle.Append(new StyleName { Val = "Comment" });
+        commentStyle.Append(new BasedOn { Val = "Normal" });
+        
+        var commentRunProps = new StyleRunProperties();
+        commentRunProps.Append(new Italic());
+        commentRunProps.Append(new Color { Val = "808080" });
+        commentStyle.Append(commentRunProps);
+        
+        styles.Append(commentStyle);
         
         for (int i = 1; i <= 9; i++)
         {
