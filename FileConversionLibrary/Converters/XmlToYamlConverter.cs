@@ -19,6 +19,8 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
         bool convertValues = true;
         bool keepStringsForNumbers = false;
         bool includeRootElement = true;
+        bool preserveCData = true;
+        bool includeComments = false;
         
         if (options is Dictionary<string, object> optionsDict)
         {
@@ -41,6 +43,16 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
             {
                 includeRootElement = includeRootValue;
             }
+            
+            if (optionsDict.TryGetValue("preserveCData", out var preserveCdataOption) && preserveCdataOption is bool preserveCdataValue)
+            {
+                preserveCData = preserveCdataValue;
+            }
+            
+            if (optionsDict.TryGetValue("includeComments", out var includeCommentsOption) && includeCommentsOption is bool includeCommentsValue)
+            {
+                includeComments = includeCommentsValue;
+            }
         }
         
         INamingConvention namingConvention = useCamelCase 
@@ -58,20 +70,24 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
         
         if (includeRootElement)
         {
-            yamlObject = ConvertXmlElementWithRoot(input.Document.Root, convertValues, keepStringsForNumbers);
+            yamlObject = ConvertXmlElementWithRoot(input.Document.Root, convertValues, keepStringsForNumbers, 
+                preserveCData, includeComments);
         }
         else
         {
-            yamlObject = ConvertXmlToObject(input.Document.Root, convertValues, keepStringsForNumbers);
+            yamlObject = ConvertXmlToObject(input.Document.Root, convertValues, keepStringsForNumbers, 
+                preserveCData, includeComments);
         }
         
         return serializer.Serialize(yamlObject);
     }
     
-    private object ConvertXmlElementWithRoot(XElement rootElement, bool convertValues, bool keepStringsForNumbers)
+    private object ConvertXmlElementWithRoot(XElement rootElement, bool convertValues, bool keepStringsForNumbers,
+        bool preserveCData, bool includeComments)
     {
         var rootName = rootElement.Name.LocalName;
-        var rootContent = ConvertXmlToObject(rootElement, convertValues, keepStringsForNumbers);
+        var rootContent = ConvertXmlToObject(rootElement, convertValues, keepStringsForNumbers, 
+            preserveCData, includeComments);
         
         return new Dictionary<string, object>
         {
@@ -79,29 +95,70 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
         };
     }
     
-    private object ConvertXmlToObject(XElement element, bool convertValues, bool keepStringsForNumbers)
+    private object ConvertXmlToObject(XElement element, bool convertValues, bool keepStringsForNumbers,
+        bool preserveCData, bool includeComments)
     {
-        if (!element.HasElements && !string.IsNullOrEmpty(element.Value))
+        var result = new Dictionary<string, object>();
+        
+        foreach (var attr in element.Attributes().Where(a => !a.IsNamespaceDeclaration))
         {
-            return ConvertValue(element.Value.Trim(), convertValues, keepStringsForNumbers);
+            var attrName = $"@{attr.Name.LocalName}";
+            result[attrName] = ConvertValue(attr.Value, convertValues, keepStringsForNumbers);
         }
         
-        if (!element.HasElements && string.IsNullOrEmpty(element.Value))
+        if (includeComments)
         {
-            return string.Empty;
+            var comments = element.Nodes().OfType<XComment>().ToList();
+            if (comments.Any())
+            {
+                var commentsList = comments.Select(c => c.Value.Trim()).ToList();
+                result["#comments"] = commentsList;
+            }
+        }
+        
+        var cdataNode = element.Nodes().OfType<XCData>().FirstOrDefault();
+        if (cdataNode != null && preserveCData)
+        {
+            result["#cdata"] = cdataNode.Value;
+            
+            if (!element.Elements().Any() && 
+                !element.Nodes().OfType<XText>().Any(t => !string.IsNullOrWhiteSpace(t.Value)))
+            {
+                return result;
+            }
+        }
+        
+        if (!element.HasElements)
+        {
+            string? textValue = null;
+            
+            if (cdataNode == null || !preserveCData)
+            {
+                textValue = element.Nodes()
+                    .OfType<XText>()
+                    .Where(t => !string.IsNullOrWhiteSpace(t.Value))
+                    .Select(t => t.Value.Trim())
+                    .FirstOrDefault();
+            }
+            
+            if (!string.IsNullOrEmpty(textValue))
+            {
+                if (result.Count > 0)
+                {
+                    result["#text"] = ConvertValue(textValue, convertValues, keepStringsForNumbers);
+                }
+                else
+                {
+                    return ConvertValue(textValue, convertValues, keepStringsForNumbers);
+                }
+            }
+            
+            return result;
         }
         
         var childGroups = element.Elements()
             .GroupBy(e => e.Name.LocalName)
             .ToDictionary(g => g.Key, g => g.ToList());
-        
-        var result = new Dictionary<string, object>();
-        
-        foreach (var attr in element.Attributes())
-        {
-            var attrName = $"@{attr.Name.LocalName}";
-            result[attrName] = ConvertValue(attr.Value, convertValues, keepStringsForNumbers);
-        }
         
         foreach (var group in childGroups)
         {
@@ -111,7 +168,8 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
             if (elements.Count == 1)
             {
                 var childElement = elements[0];
-                result[name] = ConvertXmlToObject(childElement, convertValues, keepStringsForNumbers);
+                result[name] = ConvertXmlToObject(childElement, convertValues, keepStringsForNumbers, 
+                    preserveCData, includeComments);
             }
             else
             {
@@ -119,7 +177,8 @@ public class XmlToYamlConverter : IConverter<XmlData, string>
                 
                 foreach (var childElement in elements)
                 {
-                    array.Add(ConvertXmlToObject(childElement, convertValues, keepStringsForNumbers));
+                    array.Add(ConvertXmlToObject(childElement, convertValues, keepStringsForNumbers, 
+                        preserveCData, includeComments));
                 }
                 
                 result[name] = array;

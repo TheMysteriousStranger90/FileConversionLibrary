@@ -19,6 +19,7 @@ public class XmlToJsonConverter : IConverter<XmlData, string>
         bool useIndentation = true;
         bool convertValues = true;
         bool removeWhitespace = true;
+        bool preserveCData = true;
 
         if (options is Dictionary<string, object> optionsDict)
         {
@@ -36,9 +37,19 @@ public class XmlToJsonConverter : IConverter<XmlData, string>
             {
                 removeWhitespace = removeValue;
             }
+            
+            if (optionsDict.TryGetValue("preserveCData", out var preserve) && preserve is bool preserveValue)
+            {
+                preserveCData = preserveValue;
+            }
         }
 
         var docToConvert = new XDocument(input.Document);
+
+        if (preserveCData)
+        {
+            PreserveCDataSections(docToConvert.Root);
+        }
 
         if (removeWhitespace)
         {
@@ -67,6 +78,32 @@ public class XmlToJsonConverter : IConverter<XmlData, string>
         }
 
         return json;
+    }
+    
+    private void PreserveCDataSections(XElement? element)
+    {
+        if (element == null) return;
+        
+        var cdataNodes = element.Nodes().OfType<XCData>().ToList();
+        
+        if (cdataNodes.Any())
+        {
+            element.SetAttributeValue("cdata", "true");
+            
+            string cdataContent = string.Join("", cdataNodes.Select(c => c.Value));
+            
+            foreach (var node in element.Nodes().ToList())
+            {
+                node.Remove();
+            }
+            
+            element.Add(new XText(cdataContent));
+        }
+        
+        foreach (var child in element.Elements().ToList())
+        {
+            PreserveCDataSections(child);
+        }
     }
 
     private void RemoveWhitespaceNodes(XElement element)
@@ -154,6 +191,14 @@ public class XmlToJsonConverter : IConverter<XmlData, string>
         {
             foreach (var property in obj.Properties().ToList())
             {
+                if (obj.TryGetValue("@cdata", out var cdataFlag) && 
+                    cdataFlag.Type == JTokenType.Boolean && 
+                    cdataFlag.Value<bool>() && 
+                    property.Name != "@cdata")
+                {
+                    continue;
+                }
+                
                 if (property.Value is JValue jValue && jValue.Type == JTokenType.String)
                 {
                     string? strValue = jValue.Value<string>();

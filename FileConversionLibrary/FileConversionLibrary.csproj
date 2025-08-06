@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>FileConversionLibrary</PackageId>
-        <Version>1.5.0</Version>
+        <Version>1.6.0</Version>
         <Title>FileConversionLibrary</Title>
         <Authors>Bohdan Harabadzhyu</Authors>
         <Description>FileConversionLibrary is a .NET library for converting files between different formats.
@@ -16,7 +16,17 @@
         <RepositoryType>git</RepositoryType>
         <PackageProjectUrl>https://github.com/TheMysteriousStranger90/FileConversionLibrary</PackageProjectUrl>
         <PackageTags>file-conversion, csv, xml</PackageTags>
-        <PackageReleaseNotes>Version 1.5.0:
+        <PackageReleaseNotes>Version 1.6.0:
+            - (Released: 6 August 2025) - Enhanced XML processing capabilities
+            - Added robust support for complex XML structures with nested elements
+            - Implemented proper handling of CDATA sections across all XML converters
+            - Added support for XML comments in output formats
+            - Enhanced handling of XML attributes and hierarchical structures
+            - Improved error handling for malformed XML documents
+            - Optimized performance for large XML documents with complex structures
+            - Added new configuration options for XML conversion customization
+
+            Version 1.5.0:
             - (Released: 4 August 2025) - Major update with new APIs and enhanced functionality.
             - Added Stream API for direct stream-to-stream conversions without temporary files (Currently In Testing Mode).
             - Introduced In-Memory conversion API for working with data objects directly (Currently In Testing Mode).
@@ -29,15 +39,15 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageIcon>Cover.png</PackageIcon>
-        
+
         <AssemblyTitle>FileConversionLibrary</AssemblyTitle>
         <AssemblyDescription>Advanced file format conversion library for .NET</AssemblyDescription>
         <AssemblyCompany>Bohdan Harabadzhyu</AssemblyCompany>
         <AssemblyProduct>FileConversionLibrary</AssemblyProduct>
         <AssemblyCopyright>Copyright © 2025 Bohdan Harabadzhyu</AssemblyCopyright>
-        <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <FileVersion>1.5.0.0</FileVersion>
-        
+        <AssemblyVersion>1.6.0.0</AssemblyVersion>
+        <FileVersion>1.6.0.0</FileVersion>
+
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisLevel>latest</AnalysisLevel>
         <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
@@ -60,10 +70,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="Cover.png">
-        <Pack>True</Pack>
-        <PackagePath></PackagePath>
-      </None>
+        <None Update="Cover.png">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+        </None>
     </ItemGroup>
 
     <ItemGroup>

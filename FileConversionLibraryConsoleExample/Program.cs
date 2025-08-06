@@ -16,10 +16,10 @@ class Program
         try
         {
             // Test original file-based API
-            await TestOriginalFileAPI(fileConverter);
+            //await TestOriginalFileAPI(fileConverter);
 
             // Test new Stream API
-            //await TestStreamAPI(fileConverter);
+            await TestStreamAPI(fileConverter);
 
             // Test new In-Memory API
             //TestInMemoryAPI(fileConverter);
