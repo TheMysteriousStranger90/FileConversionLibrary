@@ -16,10 +16,10 @@ class Program
         try
         {
             // Test original file-based API
-            //await TestOriginalFileAPI(fileConverter);
+            await TestOriginalFileAPI(fileConverter);
 
             // Test new Stream API
-            await TestStreamAPI(fileConverter);
+            //await TestStreamAPI(fileConverter);
 
             // Test new In-Memory API
             //TestInMemoryAPI(fileConverter);
@@ -38,6 +38,7 @@ class Program
 
     static async Task TestOriginalFileAPI(FileConverter fileConverter)
     {
+        /*
         Console.WriteLine("📁 Testing Original File-based API:");
         Console.WriteLine("=====================================");
 
@@ -69,7 +70,7 @@ class Program
             @"C:\Users\User\Desktop\output1.yaml"
         );
         Console.WriteLine("✅ CSV to YAML conversion completed.");
-
+*/
         
         // XML conversions
         await fileConverter.ConvertXmlToCsvAsync(
