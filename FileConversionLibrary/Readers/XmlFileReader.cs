@@ -78,105 +78,130 @@ public class XmlFileReader : IFileReader<XmlData>
         if (doc.Root == null)
             return Array.Empty<string>();
 
-        var headers = new List<string>();
+        var finalHeaders = new HashSet<string>();
+        var rowElementName = FindRowElement(doc);
 
-        var allElements = doc.Root.Elements().ToList();
-
-        if (!allElements.Any())
-            return Array.Empty<string>();
-
-        foreach (var element in allElements)
+        if (rowElementName != null)
         {
-            foreach (var attr in element.Attributes().Where(a => !a.IsNamespaceDeclaration))
+            var rowElements = doc.Descendants(rowElementName).ToList();
+            foreach (var rowElement in rowElements)
             {
-                var name = "attr_" + attr.Name.LocalName;
-                if (!headers.Contains(name)) headers.Add(name);
-            }
+                var parent = rowElement.Parent;
+                while (parent != null && parent != doc.Root)
+                {
+                    foreach (var attr in parent.Attributes().Where(a => !a.IsNamespaceDeclaration))
+                    {
+                        finalHeaders.Add($"{parent.Name.LocalName}_attr_{attr.Name.LocalName}");
+                    }
 
-            foreach (var child in element.Elements())
-            {
-                var name = child.Name.LocalName;
-                if (!headers.Contains(name)) headers.Add(name);
-            }
+                    parent = parent.Parent;
+                }
 
-            if (!element.HasElements && !string.IsNullOrWhiteSpace(element.Value))
-            {
-                if (!headers.Contains("text_value")) headers.Add("text_value");
+                foreach (var attr in rowElement.Attributes().Where(a => !a.IsNamespaceDeclaration))
+                {
+                    finalHeaders.Add($"attr_{attr.Name.LocalName}");
+                }
+
+                foreach (var child in rowElement.Elements())
+                {
+                    finalHeaders.Add(child.Name.LocalName);
+                }
             }
         }
 
-        return headers.ToArray();
+        if (!finalHeaders.Any())
+        {
+            return doc.Descendants().Where(e => !e.HasElements && !string.IsNullOrWhiteSpace(e.Value))
+                .Select(e => e.Name.LocalName).Distinct().ToArray();
+        }
+
+        return finalHeaders.OrderBy(h => h).ToArray();
     }
 
     private List<string[]> ExtractRows(XDocument doc, string[] headers)
     {
         var rows = new List<string[]>();
+        if (doc.Root == null) return rows;
 
-        if (doc.Root == null)
-            return rows;
+        var rowElementName = FindRowElement(doc);
+        if (rowElementName == null) return rows;
 
-        var allElements = doc.Root.Elements().ToList();
+        var rowElements = doc.Descendants(rowElementName).ToList();
 
-        foreach (var element in allElements)
+        foreach (var element in rowElements)
         {
             var row = new string[headers.Length];
+            var rowValues = new Dictionary<string, string>();
 
-            for (int i = 0; i < headers.Length; i++)
+            var parent = element.Parent;
+            while (parent != null && parent != doc.Root)
             {
-                var header = headers[i];
-
-                if (header.StartsWith("attr_"))
+                foreach (var attr in parent.Attributes().Where(a => !a.IsNamespaceDeclaration))
                 {
-                    var attrName = header.Substring(5);
-                    var attr = element.Attributes().FirstOrDefault(a => a.Name.LocalName == attrName);
-                    row[i] = attr?.Value ?? string.Empty;
+                    rowValues[$"{parent.Name.LocalName}_attr_{attr.Name.LocalName}"] = attr.Value;
                 }
-                else if (header == "text_value")
+
+                parent = parent.Parent;
+            }
+
+            foreach (var attr in element.Attributes().Where(a => !a.IsNamespaceDeclaration))
+            {
+                rowValues[$"attr_{attr.Name.LocalName}"] = attr.Value;
+            }
+
+            foreach (var child in element.Elements())
+            {
+                var repeatingChildren = child.Elements().ToList();
+                if (repeatingChildren.Any() && repeatingChildren.All(e => e.Name == repeatingChildren.First().Name))
                 {
-                    if (!element.HasElements)
-                    {
-                        row[i] = element.Value?.Trim() ?? string.Empty;
-                    }
-                    else
-                    {
-                        row[i] = string.Empty;
-                    }
+                    rowValues[child.Name.LocalName] = string.Join("; ", repeatingChildren.Select(c => c.Value.Trim()));
                 }
                 else
                 {
-                    var childElement = element.Elements().FirstOrDefault(e => e.Name.LocalName == header);
-
-                    if (childElement != null)
-                    {
-                        var cdata = childElement.DescendantNodes().OfType<XCData>().FirstOrDefault();
-                        if (cdata != null)
-                        {
-                            row[i] = cdata.Value;
-                        }
-                        else
-                        {
-                            var repeated = childElement.Elements().ToList();
-                            if (repeated.Count > 1)
-                            {
-                                row[i] = string.Join("; ", repeated.Select(r => r.Value?.Trim() ?? string.Empty));
-                            }
-                            else
-                            {
-                                row[i] = childElement.Value?.Trim() ?? string.Empty;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        row[i] = string.Empty;
-                    }
+                    rowValues[child.Name.LocalName] = child.Value.Trim();
                 }
+            }
+
+            for (int i = 0; i < headers.Length; i++)
+            {
+                row[i] = rowValues.TryGetValue(headers[i], out var value) ? value : string.Empty;
             }
 
             rows.Add(row);
         }
 
         return rows;
+    }
+
+    private string? FindRowElement(XDocument doc)
+    {
+        if (doc.Root == null) return null;
+
+        var potentialRowParents = doc.Descendants()
+            .Where(p => p.Elements().Count() > 1)
+            .Select(p => new
+            {
+                Parent = p,
+                Groups = p.Elements().GroupBy(e => e.Name.LocalName)
+            })
+            .Where(x => x.Groups.Any(g => g.Count() > 1))
+            .OrderByDescending(x => x.Groups.Max(g => g.Count()))
+            .FirstOrDefault();
+
+        if (potentialRowParents != null)
+        {
+            return potentialRowParents.Groups.OrderByDescending(g => g.Count()).First().Key;
+        }
+
+        var elementCounts = doc.Root.Descendants()
+            .Where(e => e.HasElements)
+            .GroupBy(e => e.Name.LocalName)
+            .Select(g => new { Name = g.Key, Count = g.Count() })
+            .Where(x => x.Count > 1)
+            .OrderByDescending(x => x.Count)
+            .FirstOrDefault();
+
+        return elementCounts?.Name;
     }
 
     private async Task<XmlData> ManualParseXmlAsync(string filePath)
