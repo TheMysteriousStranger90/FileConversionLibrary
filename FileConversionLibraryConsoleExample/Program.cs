@@ -5,8 +5,16 @@ using FileConversionLibrary.Models.Options;
 
 namespace FileConversionLibraryConsoleExample;
 
+/// <summary>
+/// This console application serves as a demonstration and testing ground
+/// for the FileConversionLibrary, showcasing its various conversion capabilities.
+/// </summary>
 class Program
 {
+    /// <summary>
+    /// The main entry point for the application.
+    /// Initializes the FileConverter and runs a series of conversion tests.
+    /// </summary>
     static async Task Main(string[] args)
     {
         var fileConverter = new FileConverter();
@@ -15,20 +23,20 @@ class Program
 
         try
         {
-            // Test original file-based API
-            await TestOriginalFileAPI(fileConverter);
+            // Run tests for the file-based conversion API.
+            await TestFileBasedAPI(fileConverter);
 
-            // Test new Stream API
+            // Uncomment to run tests for the Stream-based conversion API.
             //await TestStreamAPI(fileConverter);
 
-            // Test new In-Memory API
+            // Uncomment to run tests for the In-Memory conversion API.
             //TestInMemoryAPI(fileConverter);
 
             Console.WriteLine("\n🎉 All tests completed successfully!");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"\n❌ Error occurred: {ex.Message}");
+            Console.WriteLine($"\n❌ An error occurred: {ex.Message}");
             Console.WriteLine($"Details: {ex}");
         }
 
@@ -36,17 +44,19 @@ class Program
         Console.ReadKey();
     }
 
-    static async Task TestOriginalFileAPI(FileConverter fileConverter)
+    /// <summary>
+    /// Tests the primary file-to-file conversion methods of the library.
+    /// This demonstrates reading from a source file and writing to a destination file
+    /// using the new unified API with strongly-typed options classes.
+    /// </summary>
+    static async Task TestFileBasedAPI(FileConverter fileConverter)
     {
-        /*
-        Console.WriteLine("📁 Testing Original File-based API:");
-        Console.WriteLine("=====================================");
+        Console.WriteLine("📁 Testing File-based API:");
+        Console.WriteLine("===========================");
 
-        // CSV conversions
+        // --- CSV to Other Formats ---
         await fileConverter.ConvertCsvToPdfAsync(
-            @"C:\Users\User\Desktop\csv_input.csv",
-            @"C:\Users\User\Desktop\output1.pdf"
-        );
+            @"C:\Users\User\Desktop\csv_input.csv", @"C:\Users\User\Desktop\output1.pdf");
         Console.WriteLine("✅ CSV to PDF conversion completed.");
 
         await fileConverter.ConvertCsvToJsonAsync(
@@ -61,8 +71,10 @@ class Program
         );
         Console.WriteLine("✅ CSV to Word conversion completed.");
 
-        await fileConverter.ConvertCsvToXmlAsync(@"C:\Users\User\Desktop\csv_input.csv",
-            @"C:\Users\User\Desktop\output1.xml");
+        await fileConverter.ConvertCsvToXmlAsync(
+            @"C:\Users\User\Desktop\csv_input.csv",
+            @"C:\Users\User\Desktop\output1.xml"
+        );
         Console.WriteLine("✅ CSV to XML conversion completed.");
 
         await fileConverter.ConvertCsvToYamlAsync(
@@ -70,9 +82,8 @@ class Program
             @"C:\Users\User\Desktop\output1.yaml"
         );
         Console.WriteLine("✅ CSV to YAML conversion completed.");
-*/
         
-        // XML conversions
+        // --- XML to Other Formats ---
         await fileConverter.ConvertXmlToCsvAsync(
             @"C:\Users\User\Desktop\xml_input.xml",
             @"C:\Users\User\Desktop\output2.csv"
@@ -93,19 +104,21 @@ class Program
 
         await fileConverter.ConvertXmlToWordAsync(
             @"C:\Users\User\Desktop\xml_input.xml",
-            @"C:\Users\User\Desktop\output2.docx"
-        );
+            @"C:\Users\User\Desktop\output2.docx");
         Console.WriteLine("✅ XML to Word conversion completed.");
 
         await fileConverter.ConvertXmlToYamlAsync(
             @"C:\Users\User\Desktop\xml_input.xml",
-            @"C:\Users\User\Desktop\output2.yaml"
-        );
+            @"C:\Users\User\Desktop\output2.yaml");
         Console.WriteLine("✅ XML to YAML conversion completed.");
         
         Console.WriteLine();
     }
 
+    /// <summary>
+    /// Tests the stream-based conversion API, which is ideal for web applications
+    /// or scenarios where data is processed without being saved to disk.
+    /// </summary>
     static async Task TestStreamAPI(FileConverter fileConverter)
     {
         Console.WriteLine("🌊 Testing New Stream API:");
@@ -116,36 +129,38 @@ class Program
         {
             using var inputStream = File.OpenRead(@"C:\Users\User\Desktop\csv_input.csv");
 
-            // Test ConvertStreamToStringAsync
-            var jsonOptions = new ConversionOptions
+            // Test ConvertStreamToStringAsync: Reads a stream and returns the converted content as a string.
+            var jsonOptions = new JsonConversionOptions
             {
                 SourceFormat = "csv",
-                TargetFormat = "json"
+                TargetFormat = "json",
+                UseIndentation = true
             };
 
             var jsonResult = await fileConverter.ConvertStreamToStringAsync(inputStream, jsonOptions);
             await File.WriteAllTextAsync(@"C:\Users\User\Desktop\stream_output.json", jsonResult);
             Console.WriteLine("✅ Stream to JSON string conversion completed.");
 
-            // Reset stream position for next test
+            // Reset stream position for the next test
             inputStream.Position = 0;
 
-            // Test ConvertStreamToBytesAsync for PDF
-            var pdfOptions = new ConversionOptions
+            // Test ConvertStreamToBytesAsync: Reads a stream and returns the converted content as a byte array (e.g., for PDF/Word).
+            var pdfOptions = new PdfConversionOptions
             {
                 SourceFormat = "csv",
-                TargetFormat = "pdf"
+                TargetFormat = "pdf",
+                Title = "Streamed PDF Report"
             };
 
             var pdfBytes = await fileConverter.ConvertStreamToBytesAsync(inputStream, pdfOptions);
             await File.WriteAllBytesAsync(@"C:\Users\User\Desktop\stream_output.pdf", pdfBytes);
             Console.WriteLine("✅ Stream to PDF bytes conversion completed.");
 
-            // Reset stream position for next test
+            // Reset stream position for the next test
             inputStream.Position = 0;
 
-            // Test ConvertStreamAsync (Stream to Stream)
-            var xmlOptions = new ConversionOptions
+            // Test ConvertStreamAsync (Stream-to-Stream): Reads an input stream and returns a new output stream.
+            var xmlOptions = new XmlConversionOptions
             {
                 SourceFormat = "csv",
                 TargetFormat = "xml"
@@ -164,12 +179,16 @@ class Program
         Console.WriteLine();
     }
 
+    /// <summary>
+    /// Tests the in-memory conversion API, where data is represented by C# objects
+    /// (like CsvData or XmlData) instead of files.
+    /// </summary>
     static void TestInMemoryAPI(FileConverter fileConverter)
     {
         Console.WriteLine("💾 Testing New In-Memory API:");
         Console.WriteLine("=============================");
 
-        // Create sample CSV data
+        // Create sample CsvData object in memory.
         var csvData = new CsvData
         {
             Headers = new[] { "ID", "Name", "Age", "City", "Salary", "Department" },
@@ -183,177 +202,124 @@ class Program
             }
         };
 
-        // Test advanced JSON conversion
+        // Test advanced JSON conversion with options
         var jsonOptions = new JsonConversionOptions
         {
             ConvertValues = true,
-            UseIndentation = true,
-            IncludeRowNumbers = false,
-            CreateNestedObjects = false,
-            ConvertArrays = false
+            UseIndentation = true
         };
-
         var json = fileConverter.ConvertCsvToJson(csvData, jsonOptions);
         File.WriteAllText(@"C:\Users\User\Desktop\inmemory_output.json", json);
         Console.WriteLine("✅ In-Memory CSV to JSON conversion completed.");
-        Console.WriteLine($"   📄 Sample JSON preview: {json.Substring(0, Math.Min(100, json.Length))}...");
 
-        // Test advanced PDF conversion
+        // Test advanced PDF conversion with options
         var pdfOptions = new PdfConversionOptions
         {
             FontSize = 11f,
             Title = "Employee Report",
-            IncludeTimestamp = false,
-            IncludeRowNumbers = false,
-            AlternateRowColors = false,
-            LandscapeOrientation = false,
-            FontFamily = "Helvetica"
+            AlternateRowColors = true
         };
-
         var pdfBytes = fileConverter.ConvertCsvToPdf(csvData, pdfOptions);
         File.WriteAllBytes(@"C:\Users\User\Desktop\inmemory_output.pdf", pdfBytes);
         Console.WriteLine("✅ In-Memory CSV to PDF conversion completed.");
-        Console.WriteLine($"   📊 PDF size: {pdfBytes.Length:N0} bytes");
 
-        // Test advanced Word conversion
+        // Test advanced Word conversion with options
         var wordOptions = new WordConversionOptions
         {
             UseTable = true,
             FontFamily = "Calibri",
             FontSize = 11,
-            AlternateRowColors = true,
-            FormatAsHierarchy = false
+            AlternateRowColors = true
         };
-
         var wordBytes = fileConverter.ConvertCsvToWord(csvData, wordOptions);
         File.WriteAllBytes(@"C:\Users\User\Desktop\inmemory_output.docx", wordBytes);
         Console.WriteLine("✅ In-Memory CSV to Word conversion completed.");
-        Console.WriteLine($"   📝 Word document size: {wordBytes.Length:N0} bytes");
 
-        // Test advanced XML conversion
+        // Test advanced XML conversion with options
         var xmlOptions = new XmlConversionOptions
         {
             OutputFormat = "Elements",
             UseCData = false,
-            IncludeTimestamp = true,
-            NamingConvention = "Original",
             AddComments = true
         };
-
         var xml = fileConverter.ConvertCsvToXml(csvData, xmlOptions);
         File.WriteAllText(@"C:\Users\User\Desktop\inmemory_output.xml", xml);
         Console.WriteLine("✅ In-Memory CSV to XML conversion completed.");
-        Console.WriteLine($"   🏷️  XML preview: {xml.Substring(0, Math.Min(150, xml.Length))}...");
 
-        // Test advanced YAML conversion
+        // Test advanced YAML conversion with options
         var yamlOptions = new YamlConversionOptions
         {
             Structure = "Array",
-            NamingConvention = "Original",
-            ConvertDataTypes = true,
-            IncludeComments = true,
-            SortKeys = false
+            NamingConvention = "CamelCase",
+            ConvertDataTypes = true
         };
-
         var yaml = fileConverter.ConvertCsvToYaml(csvData, yamlOptions);
         File.WriteAllText(@"C:\Users\User\Desktop\inmemory_output.yaml", yaml);
         Console.WriteLine("✅ In-Memory CSV to YAML conversion completed.");
-        Console.WriteLine($"   📋 YAML preview: {yaml.Substring(0, Math.Min(200, yaml.Length))}...");
 
-        // Test XML data conversions
+        // Test in-memory conversions starting from XML data.
         TestXmlInMemoryConversions(fileConverter);
 
         Console.WriteLine();
     }
 
+    /// <summary>
+    /// Tests in-memory conversions that start with XML data.
+    /// It demonstrates the two ways to provide XML data: as a pre-parsed table (Headers/Rows)
+    /// or as a full XML document (XDocument).
+    /// </summary>
     static void TestXmlInMemoryConversions(FileConverter fileConverter)
     {
         Console.WriteLine("\n🔄 Testing XML In-Memory Conversions:");
 
         try
         {
-            var xmlContent = @"<?xml version=""1.0"" encoding=""UTF-8""?>
-<Products>
-    <Product>
-        <ProductID>1</ProductID>
-        <ProductName>Laptop Pro</ProductName>
-        <Price>1299.99</Price>
-        <Category>Electronics</Category>
-        <InStock>true</InStock>
-    </Product>
-    <Product>
-        <ProductID>2</ProductID>
-        <ProductName>Office Chair</ProductName>
-        <Price>249.50</Price>
-        <Category>Furniture</Category>
-        <InStock>false</InStock>
-    </Product>
-    <Product>
-        <ProductID>3</ProductID>
-        <ProductName>Programming Book</ProductName>
-        <Price>45.99</Price>
-        <Category>Books</Category>
-        <InStock>true</InStock>
-    </Product>
-    <Product>
-        <ProductID>4</ProductID>
-        <ProductName>Wireless Mouse</ProductName>
-        <Price>29.99</Price>
-        <Category>Electronics</Category>
-        <InStock>true</InStock>
-    </Product>
-</Products>";
-
-            var xmlData = new XmlData
+            // For in-memory conversions to table-based formats (PDF, Word, CSV),
+            // we manually provide the headers and rows, as if they were already parsed from an XML file.
+            // This is the expected input for these converters.
+            var xmlDataForTables = new XmlData
             {
-                Document = XDocument.Parse(xmlContent),
-                RootElementName = "Products",
-                XmlVersion = "1.0",
-                Encoding = "UTF-8"
-                // Headers and Rows will be ignored as Document takes precedence
+                Headers = new[] { "ProductID", "ProductName", "Price", "Category", "InStock" },
+                Rows = new List<string[]>
+                {
+                    new[] { "1", "Laptop Pro", "1299.99", "Electronics", "true" },
+                    new[] { "2", "Office Chair", "249.50", "Furniture", "false" },
+                    new[] { "3", "Programming Book", "45.99", "Books", "true" },
+                    new[] { "4", "Wireless Mouse", "29.99", "Electronics", "true" }
+                },
+                RootElementName = "Products"
             };
 
-            // XML to CSV
-            var csvOptions = new CsvConversionOptions { Delimiter = ',' };
-            var csv = fileConverter.ConvertXmlToCsv(xmlData, csvOptions);
+            // For conversions that work with the full XML structure (JSON, YAML),
+            // we provide the XDocument object directly.
+            var xmlContent = @"<?xml version=""1.0"" encoding=""UTF-8""?><Products><Product><ProductID>1</ProductID><ProductName>Laptop Pro</ProductName><Price>1299.99</Price><Category>Electronics</Category><InStock>true</InStock></Product><Product><ProductID>2</ProductID><ProductName>Office Chair</ProductName><Price>249.50</Price><Category>Furniture</Category><InStock>false</InStock></Product></Products>";
+            var xmlDataForTree = new XmlData
+            {
+                Document = XDocument.Parse(xmlContent)
+            };
+
+            // XML to CSV (uses the table-based data)
+            var csv = fileConverter.ConvertXmlToCsv(xmlDataForTables, new CsvConversionOptions { Delimiter = ',' });
             File.WriteAllText(@"C:\Users\User\Desktop\xml_inmemory_output.csv", csv);
             Console.WriteLine("✅ In-Memory XML to CSV conversion completed.");
 
-            // XML to JSON
-            var jsonOptions = new JsonConversionOptions { ConvertValues = true, UseIndentation = true };
-            var json = fileConverter.ConvertXmlToJson(xmlData, jsonOptions);
+            // XML to JSON (uses the tree-based data)
+            var json = fileConverter.ConvertXmlToJson(xmlDataForTree, new JsonConversionOptions { ConvertValues = true, UseIndentation = true });
             File.WriteAllText(@"C:\Users\User\Desktop\xml_inmemory_output.json", json);
             Console.WriteLine("✅ In-Memory XML to JSON conversion completed.");
 
-            // XML to PDF
-            var pdfOptions = new PdfConversionOptions
-            {
-                Title = "Product Catalog",
-                FontSize = 10f,
-                AlternateRowColors = true
-            };
-            var pdfBytes = fileConverter.ConvertXmlToPdf(xmlData, pdfOptions);
+            // XML to PDF (uses the table-based data)
+            var pdfBytes = fileConverter.ConvertXmlToPdf(xmlDataForTables, new PdfConversionOptions { Title = "Product Catalog", AlternateRowColors = true });
             File.WriteAllBytes(@"C:\Users\User\Desktop\xml_inmemory_output.pdf", pdfBytes);
             Console.WriteLine("✅ In-Memory XML to PDF conversion completed.");
 
-            // XML to Word
-            var wordOptions = new WordConversionOptions
-            {
-                UseTable = true,
-                FontFamily = "Arial",
-                FontSize = 11
-            };
-            var wordBytes = fileConverter.ConvertXmlToWord(xmlData, wordOptions);
+            // XML to Word (uses the table-based data)
+            var wordBytes = fileConverter.ConvertXmlToWord(xmlDataForTables, new WordConversionOptions { UseTable = true, FontFamily = "Arial" });
             File.WriteAllBytes(@"C:\Users\User\Desktop\xml_inmemory_output.docx", wordBytes);
             Console.WriteLine("✅ In-Memory XML to Word conversion completed.");
 
-            // XML to YAML
-            var yamlOptions = new YamlConversionOptions
-            {
-                Structure = "Dictionary",
-                ConvertDataTypes = true
-            };
-            var yaml = fileConverter.ConvertXmlToYaml(xmlData, yamlOptions);
+            // XML to YAML (uses the tree-based data)
+            var yaml = fileConverter.ConvertXmlToYaml(xmlDataForTree, new YamlConversionOptions { ConvertDataTypes = true });
             File.WriteAllText(@"C:\Users\User\Desktop\xml_inmemory_output.yaml", yaml);
             Console.WriteLine("✅ In-Memory XML to YAML conversion completed.");
         }
