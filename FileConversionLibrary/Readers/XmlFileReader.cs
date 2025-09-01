@@ -16,11 +16,6 @@ public class XmlFileReader : IFileReader<XmlData>
         _exceptionHandler = exceptionHandler;
     }
 
-    public async Task<XmlData> ReadWithAutoDetectDelimiterAsync(string filePath)
-    {
-        return await ReadAsync(filePath);
-    }
-
     public async Task<XmlData> ReadAsync(string filePath, object? options = null)
     {
         try

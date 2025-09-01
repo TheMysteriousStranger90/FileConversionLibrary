@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>FileConversionLibrary</PackageId>
-        <Version>1.6.0</Version>
+        <Version>1.7.0</Version>
         <Title>FileConversionLibrary</Title>
         <Authors>Bohdan Harabadzhyu</Authors>
         <Description>FileConversionLibrary is a .NET library for converting files between different formats.
@@ -17,12 +17,15 @@
         <PackageProjectUrl>https://github.com/TheMysteriousStranger90/FileConversionLibrary</PackageProjectUrl>
         <PackageTags>file-conversion, csv, xml</PackageTags>
         <PackageReleaseNotes>Version 1.7.0:
-            - (Released: 1 September 2025) - Bug fixes and improved XML parsing reliability
+            - (Released: 2 September 2025) - Bug fixes and improved XML parsing reliability
             - Fixed a critical bug in XML parsing logic that incorrectly identified data rows in complex, nested XML files, significantly improving accuracy.
             - Enhanced the heuristic for identifying repeating data records in XML to make it more robust for various document structures.
             - Corrected an issue in the XML-to-CSV converter to ensure it uses the correctly parsed data, preventing inconsistent output.
             - Fixed a data loss bug in the XML-to-JSON converter where child elements were being deleted when a CDATA section was present.
             - General stability and reliability improvements for all XML conversion pathways.
+            - Simplified the `IFileReader` interface to a single, more flexible `ReadAsync` method.
+            - Refactored `CsvFileReader` and `XmlFileReader` to align with the new unified API, improving internal consistency and maintainability.
+            - **API Unification:** Standardized all file-based conversion methods in `FileConverter` to accept strongly-typed options classes (e.g., `JsonConversionOptions`, `PdfConversionOptions`) instead of long parameter lists. This creates a consistent, predictable, and extensible API across all conversion types (file, stream, and in-memory).
             
             Version 1.6.0:
             - (Released: 6 August 2025) - Enhanced XML processing capabilities

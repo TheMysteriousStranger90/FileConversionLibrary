@@ -2,5 +2,5 @@
 
 public interface IFileReader<T>
 {
-    Task<T> ReadWithAutoDetectDelimiterAsync(string filePath);
+    Task<T> ReadAsync(string filePath, object? options = null);
 }

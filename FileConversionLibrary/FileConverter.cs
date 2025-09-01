@@ -7,7 +7,6 @@ using FileConversionLibrary.Models;
 using FileConversionLibrary.Models.Options;
 using FileConversionLibrary.Readers;
 using FileConversionLibrary.Writers;
-using iTextSharp.text;
 
 namespace FileConversionLibrary;
 
@@ -74,7 +73,7 @@ public class FileConverter
         return _instance ??= new FileConverter();
     }
 
-    public async Task ConvertCsvToJsonAsync(string csvFilePath, string jsonOutputPath)
+    public async Task ConvertCsvToJsonAsync(string csvFilePath, string jsonOutputPath, JsonConversionOptions? options = null)
     {
         try
         {
@@ -89,12 +88,12 @@ public class FileConverter
                 Directory.CreateDirectory(outputDirectory);
             }
             
-            var csvData = await _csvReader.ReadWithAutoDetectDelimiterAsync(csvFilePath);
+            var csvData = await _csvReader.ReadAsync(csvFilePath);
 
             var converter = _converterFactory.GetConverter<CsvData, string>(OutputFormat.Json);
-            var json = converter.Convert(csvData);
+            var json = converter.Convert(csvData, options);
 
-            await _jsonWriter.WriteAsync(jsonOutputPath, json);
+            await _jsonWriter.WriteAsync(jsonOutputPath, json, options);
         }
         catch (Exception ex)
         {
@@ -103,7 +102,7 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertCsvToPdfAsync(string csvFilePath, string pdfOutputPath)
+    public async Task ConvertCsvToPdfAsync(string csvFilePath, string pdfOutputPath, PdfConversionOptions? options = null)
     {
         try
         {
@@ -118,10 +117,10 @@ public class FileConverter
                 Directory.CreateDirectory(outputDirectory);
             }
             
-            var csvData = await _csvReader.ReadWithAutoDetectDelimiterAsync(csvFilePath);
+            var csvData = await _csvReader.ReadAsync(csvFilePath);
 
             var converter = _converterFactory.GetConverter<CsvData, byte[]>(OutputFormat.Pdf);
-            var pdfData = converter.Convert(csvData);
+            var pdfData = converter.Convert(csvData, options);
 
             await _pdfWriter.WriteAsync(pdfOutputPath, pdfData);
         }
@@ -132,7 +131,7 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertCsvToWordAsync(string csvFilePath, string wordOutputPath)
+    public async Task ConvertCsvToWordAsync(string csvFilePath, string wordOutputPath, WordConversionOptions? options = null)
     {
         try
         {
@@ -147,10 +146,10 @@ public class FileConverter
                 Directory.CreateDirectory(outputDirectory);
             }
             
-            var csvData = await _csvReader.ReadWithAutoDetectDelimiterAsync(csvFilePath);
+            var csvData = await _csvReader.ReadAsync(csvFilePath);
 
             var converter = _converterFactory.GetConverter<CsvData, byte[]>(OutputFormat.Word);
-            var wordData = converter.Convert(csvData);
+            var wordData = converter.Convert(csvData, options);
 
             await _wordWriter.WriteAsync(wordOutputPath, wordData);
         }
@@ -161,13 +160,7 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertCsvToXmlAsync(
-        string csvFilePath,
-        string xmlOutputPath,
-        CsvToXmlConverter.XmlOutputFormat format = CsvToXmlConverter.XmlOutputFormat.Elements,
-        bool useCData = true,
-        bool useTabsForIndentation = false,
-        int indentSize = 2)
+    public async Task ConvertCsvToXmlAsync(string csvFilePath, string xmlOutputPath, XmlConversionOptions? options = null)
     {
         try
         {
@@ -182,25 +175,12 @@ public class FileConverter
                 Directory.CreateDirectory(outputDirectory);
             }
             
-            var csvData = await _csvReader.ReadWithAutoDetectDelimiterAsync(csvFilePath);
-
-            var converterOptions = new Dictionary<string, object>
-            {
-                ["format"] = format,
-                ["useCData"] = useCData
-            };
-
-            var writerOptions = new Dictionary<string, object>
-            {
-                ["useIndent"] = true,
-                ["useTabs"] = useTabsForIndentation,
-                ["indentSize"] = indentSize
-            };
+            var csvData = await _csvReader.ReadAsync(csvFilePath);
 
             var converter = _converterFactory.GetConverter<CsvData, string>(OutputFormat.Xml);
-            var xml = converter.Convert(csvData, converterOptions);
+            var xml = converter.Convert(csvData, options);
 
-            await _xmlWriter.WriteAsync(xmlOutputPath, xml, writerOptions);
+            await _xmlWriter.WriteAsync(xmlOutputPath, xml, options);
         }
         catch (Exception ex)
         {
@@ -209,7 +189,7 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertCsvToYamlAsync(string csvFilePath, string yamlOutputPath)
+    public async Task ConvertCsvToYamlAsync(string csvFilePath, string yamlOutputPath, YamlConversionOptions? options = null)
     {
         try
         {
@@ -224,10 +204,10 @@ public class FileConverter
                 Directory.CreateDirectory(outputDirectory);
             }
             
-            var csvData = await _csvReader.ReadWithAutoDetectDelimiterAsync(csvFilePath);
+            var csvData = await _csvReader.ReadAsync(csvFilePath);
 
             var converter = _converterFactory.GetConverter<CsvData, string>(OutputFormat.Yaml);
-            var yaml = converter.Convert(csvData);
+            var yaml = converter.Convert(csvData, options);
 
             await _yamlWriter.WriteAsync(yamlOutputPath, yaml);
         }
@@ -238,13 +218,7 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertXmlToCsvAsync(
-        string xmlFilePath,
-        string csvOutputPath,
-        char delimiter = ',',
-        bool includeAttributes = true,
-        bool preserveCData = true,
-        bool includeComments = false)
+    public async Task ConvertXmlToCsvAsync(string xmlFilePath, string csvOutputPath, CsvConversionOptions? options = null)
     {
         try
         {
@@ -259,23 +233,10 @@ public class FileConverter
                 Directory.CreateDirectory(outputDirectory);
             }
 
-            var readerOptions = new Dictionary<string, object>
-            {
-                ["includeAttributes"] = includeAttributes,
-                ["preserveCData"] = preserveCData,
-                ["includeComments"] = includeComments
-            };
-
-            var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
-
-            var converterOptions = new Dictionary<string, object>
-            {
-                ["delimiter"] = delimiter,
-                ["quoteValues"] = true
-            };
+            var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
             var converter = _converterFactory.GetConverter<XmlData, string>(OutputFormat.Csv);
-            var csv = converter.Convert(xmlData, converterOptions);
+            var csv = converter.Convert(xmlData, options);
 
             await _csvWriter.WriteAsync(csvOutputPath, csv);
         }
@@ -286,11 +247,7 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertXmlToJsonAsync(
-        string xmlFilePath,
-        string jsonOutputPath,
-        bool convertValues = true,
-        bool removeWhitespace = true)
+    public async Task ConvertXmlToJsonAsync(string xmlFilePath, string jsonOutputPath, JsonConversionOptions? options = null)
     {
         try
         {
@@ -305,24 +262,12 @@ public class FileConverter
                 Directory.CreateDirectory(outputDirectory);
             }
             
-            var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
-
-            if (xmlData.Document == null)
-            {
-                throw new InvalidOperationException("XML document could not be loaded properly");
-            }
-
-            var converterOptions = new Dictionary<string, object>
-            {
-                ["useIndentation"] = true,
-                ["convertValues"] = convertValues,
-                ["removeWhitespace"] = removeWhitespace
-            };
+            var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
             var converter = _converterFactory.GetConverter<XmlData, string>(OutputFormat.Json);
-            var json = converter.Convert(xmlData, converterOptions);
+            var json = converter.Convert(xmlData, options);
 
-            await _jsonWriter.WriteAsync(jsonOutputPath, json);
+            await _jsonWriter.WriteAsync(jsonOutputPath, json, options);
         }
         catch (Exception ex)
         {
@@ -331,13 +276,7 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertXmlToPdfAsync(
-        string xmlFilePath,
-        string pdfOutputPath,
-        bool hierarchicalView = false,
-        float fontSize = 10f,
-        bool addBorders = true,
-        bool alternateRowColors = false)
+    public async Task ConvertXmlToPdfAsync(string xmlFilePath, string pdfOutputPath, PdfConversionOptions? options = null)
     {
         try
         {
@@ -352,19 +291,10 @@ public class FileConverter
                 Directory.CreateDirectory(outputDirectory);
             }
             
-            var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
-
-            var converterOptions = new Dictionary<string, object>
-            {
-                ["fontSize"] = fontSize,
-                ["addBorders"] = addBorders,
-                ["alternateRowColors"] = alternateRowColors,
-                ["headerBackgroundColor"] = new BaseColor(220, 220, 220),
-                ["hierarchicalView"] = hierarchicalView
-            };
+            var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
             var converter = _converterFactory.GetConverter<XmlData, byte[]>(OutputFormat.Pdf);
-            var pdfData = converter.Convert(xmlData, converterOptions);
+            var pdfData = converter.Convert(xmlData, options);
 
             await _pdfWriter.WriteAsync(pdfOutputPath, pdfData);
         }
@@ -375,14 +305,7 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertXmlToWordAsync(
-        string xmlFilePath,
-        string wordOutputPath,
-        bool useTable = true,
-        bool addHeaderRow = true,
-        bool formatAsHierarchy = false,
-        string fontFamily = "Calibri",
-        int fontSize = 11)
+    public async Task ConvertXmlToWordAsync(string xmlFilePath, string wordOutputPath, WordConversionOptions? options = null)
     {
         try
         {
@@ -397,24 +320,10 @@ public class FileConverter
                 Directory.CreateDirectory(outputDirectory);
             }
             
-            var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
-
-            if (xmlData.Headers == null || xmlData.Rows == null)
-            {
-                throw new InvalidOperationException("XML data could not be loaded properly");
-            }
-
-            var converterOptions = new Dictionary<string, object>
-            {
-                ["useTable"] = useTable,
-                ["addHeaderRow"] = addHeaderRow,
-                ["fontFamily"] = fontFamily,
-                ["fontSize"] = fontSize,
-                ["formatAsHierarchy"] = formatAsHierarchy
-            };
+            var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
             var converter = _converterFactory.GetConverter<XmlData, byte[]>(OutputFormat.Word);
-            var wordData = converter.Convert(xmlData, converterOptions);
+            var wordData = converter.Convert(xmlData, options);
 
             await _wordWriter.WriteAsync(wordOutputPath, wordData);
         }
@@ -425,12 +334,7 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertXmlToYamlAsync(
-        string xmlFilePath,
-        string yamlOutputPath,
-        bool useCamelCase = false,
-        bool convertValues = true,
-        bool keepStringsForNumbers = false)
+    public async Task ConvertXmlToYamlAsync(string xmlFilePath, string yamlOutputPath, YamlConversionOptions? options = null)
     {
         try
         {
@@ -445,22 +349,10 @@ public class FileConverter
                 Directory.CreateDirectory(outputDirectory);
             }
             
-            var xmlData = await _xmlReader.ReadWithAutoDetectDelimiterAsync(xmlFilePath);
-
-            if (xmlData.Document == null)
-            {
-                throw new InvalidOperationException("XML document could not be loaded properly");
-            }
-
-            var converterOptions = new Dictionary<string, object>
-            {
-                ["useCamelCase"] = useCamelCase,
-                ["convertValues"] = convertValues,
-                ["keepStringsForNumbers"] = keepStringsForNumbers
-            };
+            var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
             var converter = _converterFactory.GetConverter<XmlData, string>(OutputFormat.Yaml);
-            var yaml = converter.Convert(xmlData, converterOptions);
+            var yaml = converter.Convert(xmlData, options);
 
             await _yamlWriter.WriteAsync(yamlOutputPath, yaml);
         }
@@ -470,9 +362,6 @@ public class FileConverter
             throw new FileConversionException($"Failed to convert {xmlFilePath} to {yamlOutputPath}", ex);
         }
     }
-    
-    
-    
     
     public async Task<Stream> ConvertStreamAsync(Stream input, ConversionOptions options)
     {

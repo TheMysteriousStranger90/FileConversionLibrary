@@ -3,6 +3,7 @@ using FileConversionLibrary.Models;
 using System.Globalization;
 using System.Text;
 using CsvHelper.Configuration;
+using FileConversionLibrary.Models.Options;
 
 namespace FileConversionLibrary.Readers;
 
@@ -14,8 +15,8 @@ public class CsvFileReader : IFileReader<CsvData>
     {
         _exceptionHandler = exceptionHandler;
     }
-    
-    public async Task<CsvData> ReadWithAutoDetectDelimiterAsync(string filePath)
+
+    public async Task<CsvData> ReadAsync(string filePath, object? options = null)
     {
         try
         {
@@ -24,33 +25,17 @@ public class CsvFileReader : IFileReader<CsvData>
                 throw new FileNotFoundException($"CSV file not found: {filePath}");
             }
 
-            var firstLines = File.ReadLines(filePath).Take(5).ToList();
-            if (firstLines.Count == 0)
-                throw new Exception("Empty CSV file");
-
-            var possibleDelimiters = new[] { ',', ';', '\t', '|' };
-
-            var delimiterCounts = possibleDelimiters.ToDictionary(
-                d => d,
-                d => firstLines.Select(line => line.Count(c => c == d)).ToList());
-
-            char detectedDelimiter = ',';
-            int bestConsistency = -1;
-
-            foreach (var kvp in delimiterCounts)
+            char delimiter;
+            if (options is CsvConversionOptions csvOptions && csvOptions.Delimiter != default)
             {
-                if (kvp.Value.Sum() == 0) continue;
-
-                var consistentCount = kvp.Value.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Count();
-
-                if (consistentCount > bestConsistency)
-                {
-                    bestConsistency = consistentCount;
-                    detectedDelimiter = kvp.Key;
-                }
+                delimiter = csvOptions.Delimiter;
+            }
+            else
+            {
+                delimiter = await AutoDetectDelimiterAsync(filePath);
             }
 
-            return await ReadAsync(filePath, detectedDelimiter);
+            return await ReadInternalAsync(filePath, delimiter);
         }
         catch (Exception ex)
         {
@@ -59,17 +44,41 @@ public class CsvFileReader : IFileReader<CsvData>
         }
     }
 
-    private async Task<CsvData> ReadAsync(string filePath, object? options = null)
+    private async Task<char> AutoDetectDelimiterAsync(string filePath)
     {
-        var delimiter = options is char ? (char)options : ',';
+        var firstLines = (await File.ReadAllLinesAsync(filePath)).Take(5).ToList();
+        if (firstLines.Count == 0)
+            throw new Exception("Empty CSV file");
 
+        var possibleDelimiters = new[] { ',', ';', '\t', '|' };
+
+        var delimiterCounts = possibleDelimiters.ToDictionary(
+            d => d,
+            d => firstLines.Select(line => line.Count(c => c == d)).ToList());
+
+        char detectedDelimiter = ',';
+        int bestConsistency = -1;
+
+        foreach (var kvp in delimiterCounts)
+        {
+            if (kvp.Value.Sum() == 0) continue;
+
+            var consistentCount = kvp.Value.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Count();
+
+            if (consistentCount > bestConsistency)
+            {
+                bestConsistency = consistentCount;
+                detectedDelimiter = kvp.Key;
+            }
+        }
+
+        return detectedDelimiter;
+    }
+
+    private async Task<CsvData> ReadInternalAsync(string filePath, char delimiter)
+    {
         try
         {
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException($"CSV file not found: {filePath}");
-            }
-
             using var reader = new StreamReader(filePath, Encoding.UTF8);
             using var csv = new CsvHelper.CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
             {
@@ -97,7 +106,7 @@ public class CsvFileReader : IFileReader<CsvData>
                 var row = new string[headers.Length];
                 for (var i = 0; i < headers.Length; i++)
                 {
-                    row[i] = csv.GetField(i)?.Trim();
+                    row[i] = csv.GetField(i)?.Trim() ?? string.Empty;
                 }
 
                 records.Add(row);
