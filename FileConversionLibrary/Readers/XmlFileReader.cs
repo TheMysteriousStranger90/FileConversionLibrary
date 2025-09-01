@@ -1,4 +1,6 @@
-﻿using System.Xml;
+﻿using System.Net;
+using System.Text.RegularExpressions;
+using System.Xml;
 using System.Xml.Linq;
 using FileConversionLibrary.Interfaces;
 using FileConversionLibrary.Models;
@@ -12,11 +14,6 @@ public class XmlFileReader : IFileReader<XmlData>
     public XmlFileReader(IExceptionHandler? exceptionHandler = null)
     {
         _exceptionHandler = exceptionHandler;
-    }
-
-    public async Task<XmlData> ReadWithAutoDetectDelimiterAsync(string filePath)
-    {
-        return await ReadAsync(filePath);
     }
 
     public async Task<XmlData> ReadAsync(string filePath, object? options = null)
@@ -76,89 +73,93 @@ public class XmlFileReader : IFileReader<XmlData>
         if (doc.Root == null)
             return Array.Empty<string>();
 
-        var headers = new HashSet<string>();
+        var finalHeaders = new HashSet<string>();
+        var rowElementName = FindRowElement(doc);
 
-        var allElements = doc.Root.Elements().ToList();
-
-        if (!allElements.Any())
-            return Array.Empty<string>();
-
-        foreach (var element in allElements)
+        if (rowElementName != null)
         {
-            foreach (var attr in element.Attributes().Where(a => !a.IsNamespaceDeclaration))
+            var rowElements = doc.Descendants(rowElementName).ToList();
+            foreach (var rowElement in rowElements)
             {
-                headers.Add("attr_" + attr.Name.LocalName);
-            }
+                var parent = rowElement.Parent;
+                while (parent != null && parent != doc.Root)
+                {
+                    foreach (var attr in parent.Attributes().Where(a => !a.IsNamespaceDeclaration))
+                    {
+                        finalHeaders.Add($"{parent.Name.LocalName}_attr_{attr.Name.LocalName}");
+                    }
 
-            foreach (var child in element.Elements())
-            {
-                headers.Add(child.Name.LocalName);
-            }
+                    parent = parent.Parent;
+                }
 
-            if (!element.HasElements && !string.IsNullOrWhiteSpace(element.Value))
-            {
-                headers.Add("text_value");
+                foreach (var attr in rowElement.Attributes().Where(a => !a.IsNamespaceDeclaration))
+                {
+                    finalHeaders.Add($"attr_{attr.Name.LocalName}");
+                }
+
+                foreach (var child in rowElement.Elements())
+                {
+                    finalHeaders.Add(child.Name.LocalName);
+                }
             }
         }
 
-        return headers.ToArray();
+        if (!finalHeaders.Any())
+        {
+            return doc.Descendants().Where(e => !e.HasElements && !string.IsNullOrWhiteSpace(e.Value))
+                .Select(e => e.Name.LocalName).Distinct().ToArray();
+        }
+
+        return finalHeaders.OrderBy(h => h).ToArray();
     }
 
     private List<string[]> ExtractRows(XDocument doc, string[] headers)
     {
         var rows = new List<string[]>();
+        if (doc.Root == null) return rows;
 
-        if (doc.Root == null)
-            return rows;
+        var rowElementName = FindRowElement(doc);
+        if (rowElementName == null) return rows;
 
-        var allElements = doc.Root.Elements().ToList();
+        var rowElements = doc.Descendants(rowElementName).ToList();
 
-        foreach (var element in allElements)
+        foreach (var element in rowElements)
         {
             var row = new string[headers.Length];
+            var rowValues = new Dictionary<string, string>();
 
-            for (int i = 0; i < headers.Length; i++)
+            var parent = element.Parent;
+            while (parent != null && parent != doc.Root)
             {
-                var header = headers[i];
-
-                if (header.StartsWith("attr_"))
+                foreach (var attr in parent.Attributes().Where(a => !a.IsNamespaceDeclaration))
                 {
-                    var attrName = header.Substring(5);
-                    var attr = element.Attribute(attrName);
-                    row[i] = attr?.Value ?? string.Empty;
+                    rowValues[$"{parent.Name.LocalName}_attr_{attr.Name.LocalName}"] = attr.Value;
                 }
-                else if (header == "text_value")
+
+                parent = parent.Parent;
+            }
+
+            foreach (var attr in element.Attributes().Where(a => !a.IsNamespaceDeclaration))
+            {
+                rowValues[$"attr_{attr.Name.LocalName}"] = attr.Value;
+            }
+
+            foreach (var child in element.Elements())
+            {
+                var repeatingChildren = child.Elements().ToList();
+                if (repeatingChildren.Any() && repeatingChildren.All(e => e.Name == repeatingChildren.First().Name))
                 {
-                    if (!element.HasElements)
-                    {
-                        row[i] = element.Value?.Trim() ?? string.Empty;
-                    }
-                    else
-                    {
-                        row[i] = string.Empty;
-                    }
+                    rowValues[child.Name.LocalName] = string.Join("; ", repeatingChildren.Select(c => c.Value.Trim()));
                 }
                 else
                 {
-                    var childElement = element.Element(header);
-
-                    if (childElement != null)
-                    {
-                        var cdata = childElement.DescendantNodes().OfType<XCData>().FirstOrDefault();
-                        if (cdata != null)
-                        {
-                            row[i] = cdata.Value;
-                        }
-                        else
-                        {
-                            row[i] = childElement.Value?.Trim() ?? string.Empty;
-                        }
-                    }
-                    else
-                    {
-                        row[i] = string.Empty;
-                    }
+                    rowValues[child.Name.LocalName] = child.Value.Trim();
                 }
+            }
+
+            for (int i = 0; i < headers.Length; i++)
+            {
+                row[i] = rowValues.TryGetValue(headers[i], out var value) ? value : string.Empty;
             }
 
             rows.Add(row);
@@ -167,99 +168,146 @@ public class XmlFileReader : IFileReader<XmlData>
         return rows;
     }
 
+    private string? FindRowElement(XDocument doc)
+    {
+        if (doc.Root == null) return null;
+
+        var potentialRowParents = doc.Descendants()
+            .Where(p => p.Elements().Count() > 1)
+            .Select(p => new
+            {
+                Parent = p,
+                Groups = p.Elements().GroupBy(e => e.Name.LocalName)
+            })
+            .Where(x => x.Groups.Any(g => g.Count() > 1))
+            .OrderByDescending(x => x.Groups.Max(g => g.Count()))
+            .FirstOrDefault();
+
+        if (potentialRowParents != null)
+        {
+            return potentialRowParents.Groups.OrderByDescending(g => g.Count()).First().Key;
+        }
+
+        var elementCounts = doc.Root.Descendants()
+            .Where(e => e.HasElements)
+            .GroupBy(e => e.Name.LocalName)
+            .Select(g => new { Name = g.Key, Count = g.Count() })
+            .Where(x => x.Count > 1)
+            .OrderByDescending(x => x.Count)
+            .FirstOrDefault();
+
+        return elementCounts?.Name;
+    }
+
     private async Task<XmlData> ManualParseXmlAsync(string filePath)
     {
         try
         {
             var content = await File.ReadAllTextAsync(filePath);
 
-            var rows = new List<Dictionary<string, string>>();
-            var allHeaders = new HashSet<string>();
+            content = content.Replace("\0", string.Empty);
+            content = Regex.Replace(content, @"[^\u0009\u000A\u000D\u0020-\uFFFF]", string.Empty);
 
-            var tagPattern = @"<([a-zA-Z0-9_]+)(?:\s+[^>]*)?>(.*?)</\1>";
-            var rowMatches = System.Text.RegularExpressions.Regex.Matches(content, tagPattern,
-                System.Text.RegularExpressions.RegexOptions.Singleline);
+            content = WebUtility.HtmlDecode(content);
 
-            foreach (System.Text.RegularExpressions.Match rowMatch in rowMatches)
+            try
             {
-                var rowTag = rowMatch.Groups[1].Value;
-                var rowContent = rowMatch.Groups[2].Value;
+                var doc = XDocument.Parse(content, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-                var row = new Dictionary<string, string>();
+                var headers = ExtractHeaders(doc);
+                var rows = ExtractRows(doc, headers);
 
-                var elementPattern = @"<([a-zA-Z0-9_]+)(?:\s+[^>]*)?>(.*?)</\1>";
-                var elementMatches = System.Text.RegularExpressions.Regex.Matches(rowContent, elementPattern,
-                    System.Text.RegularExpressions.RegexOptions.Singleline);
-
-                foreach (System.Text.RegularExpressions.Match elementMatch in elementMatches)
+                return new XmlData
                 {
-                    var elementName = elementMatch.Groups[1].Value;
-                    var elementContent = elementMatch.Groups[2].Value;
+                    Document = doc,
+                    Headers = headers,
+                    Rows = rows,
+                    RootElementName = doc.Root?.Name.LocalName ?? "root",
+                    XmlVersion = doc.Declaration?.Version ?? "1.0",
+                    Encoding = doc.Declaration?.Encoding ?? "UTF-8"
+                };
+            }
+            catch (Exception parseEx)
+            {
+                _exceptionHandler?.Handle(
+                    new Exception("XDocument.Parse failed during manual parse, falling back to regex", parseEx));
 
-                    if (elementContent.StartsWith("<![CDATA[") && elementContent.EndsWith("]]>"))
+                var rows = new List<Dictionary<string, string>>();
+                var allHeaders = new HashSet<string>();
+
+                var tagPattern = @"<([a-zA-Z0-9_:\-\.]+)(?:\s+[^>]*)?>(.*?)</\1>";
+                var rowMatches = Regex.Matches(content, tagPattern, RegexOptions.Singleline);
+
+                foreach (Match rowMatch in rowMatches)
+                {
+                    var rowContent = rowMatch.Groups[2].Value;
+                    var row = new Dictionary<string, string>();
+
+                    var elementPattern = @"<([a-zA-Z0-9_:\-\.]+)(?:\s+[^>]*)?>(.*?)</\1>";
+                    var elementMatches = Regex.Matches(rowContent, elementPattern, RegexOptions.Singleline);
+
+                    foreach (Match elementMatch in elementMatches)
                     {
-                        elementContent = elementContent.Substring(9, elementContent.Length - 12);
+                        var elementName = elementMatch.Groups[1].Value;
+                        var elementContent = elementMatch.Groups[2].Value;
+
+                        if (elementContent.StartsWith("<![CDATA[") && elementContent.EndsWith("]]>"))
+                        {
+                            elementContent = elementContent.Substring(9, elementContent.Length - 12);
+                        }
+
+                        elementContent = WebUtility.HtmlDecode(elementContent);
+
+                        row[elementName] = elementContent;
+                        allHeaders.Add(elementName);
                     }
 
-                    elementContent = DecodeXmlEntities(elementContent);
+                    var attrPattern = @"\s+([a-zA-Z0-9_:\-\.]+)=(?:'([^']*)'|""([^""]*)"")";
+                    var attrMatches = Regex.Matches(rowMatch.Value, attrPattern);
 
-                    row[elementName] = elementContent;
-                    allHeaders.Add(elementName);
+                    foreach (Match attrMatch in attrMatches)
+                    {
+                        var attrName = "attr_" + attrMatch.Groups[1].Value;
+                        var attrValue = attrMatch.Groups[2].Success
+                            ? attrMatch.Groups[2].Value
+                            : attrMatch.Groups[3].Value;
+                        row[attrName] = attrValue;
+                        allHeaders.Add(attrName);
+                    }
+
+                    rows.Add(row);
                 }
 
-                var attrPattern = @"\s+([a-zA-Z0-9_]+)=""([^""]*)""";
-                var attrMatches = System.Text.RegularExpressions.Regex.Matches(rowMatch.Value, attrPattern);
+                var headerArray = allHeaders.OrderBy(h => h).ToArray();
+                var dataRows = new List<string[]>();
 
-                foreach (System.Text.RegularExpressions.Match attrMatch in attrMatches)
+                foreach (var row in rows)
                 {
-                    var attrName = "attr_" + attrMatch.Groups[1].Value;
-                    var attrValue = attrMatch.Groups[2].Value;
-                    row[attrName] = attrValue;
-                    allHeaders.Add(attrName);
+                    var dataRow = new string[headerArray.Length];
+                    for (int i = 0; i < headerArray.Length; i++)
+                    {
+                        dataRow[i] = row.TryGetValue(headerArray[i], out var value) ? value : string.Empty;
+                    }
+
+                    dataRows.Add(dataRow);
                 }
 
-                rows.Add(row);
-            }
-
-            var headerArray = allHeaders.ToArray();
-            var dataRows = new List<string[]>();
-
-            foreach (var row in rows)
-            {
-                var dataRow = new string[headerArray.Length];
-                for (int i = 0; i < headerArray.Length; i++)
+                _exceptionHandler?.Handle(new Exception("Successfully parsed XML using manual parser (fallback)"));
+                return new XmlData
                 {
-                    dataRow[i] = row.TryGetValue(headerArray[i], out var value) ? value : string.Empty;
-                }
-
-                dataRows.Add(dataRow);
+                    Headers = headerArray,
+                    Rows = dataRows,
+                    Document = new XDocument(),
+                    RootElementName = "root",
+                    XmlVersion = "1.0",
+                    Encoding = "UTF-8"
+                };
             }
-
-            _exceptionHandler?.Handle(new Exception("Successfully parsed XML using manual parser"));
-            return new XmlData
-            {
-                Headers = headerArray,
-                Rows = dataRows,
-                Document = new XDocument(),
-                RootElementName = "root",
-                XmlVersion = "1.0",
-                Encoding = "UTF-8"
-            };
         }
         catch (Exception ex)
         {
             _exceptionHandler?.Handle(new Exception("Manual XML parsing failed", ex));
             throw;
         }
-    }
-
-    private string DecodeXmlEntities(string content)
-    {
-        return content
-            .Replace("&amp;", "&")
-            .Replace("&lt;", "<")
-            .Replace("&gt;", ">")
-            .Replace("&quot;", "\"")
-            .Replace("&apos;", "'");
     }
 }

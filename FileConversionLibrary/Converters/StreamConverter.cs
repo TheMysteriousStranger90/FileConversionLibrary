@@ -96,7 +96,7 @@ public class StreamConverter : IStreamConverter
         {
             await File.WriteAllTextAsync(tempFile, content);
             var csvReader = new CsvFileReader(_exceptionHandler);
-            return await csvReader.ReadWithAutoDetectDelimiterAsync(tempFile);
+            return await csvReader.ReadAsync(tempFile);
         }
         finally
         {
@@ -115,7 +115,7 @@ public class StreamConverter : IStreamConverter
         {
             await File.WriteAllTextAsync(tempFile, content);
             var xmlReader = new XmlFileReader(_exceptionHandler);
-            return await xmlReader.ReadWithAutoDetectDelimiterAsync(tempFile);
+            return await xmlReader.ReadAsync(tempFile);
         }
         finally
         {

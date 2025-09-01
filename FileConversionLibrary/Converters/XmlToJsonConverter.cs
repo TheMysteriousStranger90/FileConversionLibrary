@@ -37,7 +37,7 @@ public class XmlToJsonConverter : IConverter<XmlData, string>
             {
                 removeWhitespace = removeValue;
             }
-            
+
             if (optionsDict.TryGetValue("preserveCData", out var preserve) && preserve is bool preserveValue)
             {
                 preserveCData = preserveValue;
@@ -79,28 +79,17 @@ public class XmlToJsonConverter : IConverter<XmlData, string>
 
         return json;
     }
-    
+
     private void PreserveCDataSections(XElement? element)
     {
         if (element == null) return;
-        
-        var cdataNodes = element.Nodes().OfType<XCData>().ToList();
-        
-        if (cdataNodes.Any())
+
+        if (element.Nodes().OfType<XCData>().Any())
         {
-            element.SetAttributeValue("cdata", "true");
-            
-            string cdataContent = string.Join("", cdataNodes.Select(c => c.Value));
-            
-            foreach (var node in element.Nodes().ToList())
-            {
-                node.Remove();
-            }
-            
-            element.Add(new XText(cdataContent));
+            element.SetAttributeValue("__isCdata", "true");
         }
-        
-        foreach (var child in element.Elements().ToList())
+
+        foreach (var child in element.Elements())
         {
             PreserveCDataSections(child);
         }
@@ -189,16 +178,16 @@ public class XmlToJsonConverter : IConverter<XmlData, string>
     {
         if (token is JObject obj)
         {
+            if (obj.TryGetValue("@__isCdata", out var cdataFlag) &&
+                cdataFlag.Type == JTokenType.String &&
+                cdataFlag.Value<string>() == "true")
+            {
+                obj.Remove("@__isCdata");
+                return;
+            }
+
             foreach (var property in obj.Properties().ToList())
             {
-                if (obj.TryGetValue("@cdata", out var cdataFlag) && 
-                    cdataFlag.Type == JTokenType.Boolean && 
-                    cdataFlag.Value<bool>() && 
-                    property.Name != "@cdata")
-                {
-                    continue;
-                }
-                
                 if (property.Value is JValue jValue && jValue.Type == JTokenType.String)
                 {
                     string? strValue = jValue.Value<string>();
