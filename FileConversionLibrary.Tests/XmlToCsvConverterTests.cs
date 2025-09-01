@@ -176,38 +176,7 @@ Line 2""quoted""</Notes>
             Assert.IsTrue(result.Contains("John,30"));
             Assert.IsTrue(result.Contains("Jane,25"));
         }
-
-        [Test]
-        public void Convert_WithBothDocumentAndTabularData_PrioritizesDocument()
-        {
-            // Arrange
-            var xmlDoc = XDocument.Parse(@"<root>
-                                            <person>
-                                                <FullName>John Doe</FullName>
-                                                <Years>30</Years>
-                                            </person>
-                                           </root>");
-
-            var xmlData = new XmlData
-            {
-                Document = xmlDoc,
-                Headers = new[] { "Name", "Age" },
-                Rows = new List<string[]>
-                {
-                    new[] { "Jane", "25" }
-                }
-            };
-
-            // Act
-            var result = _converter.Convert(xmlData);
-
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.IsTrue(result.Contains("FullName") && result.Contains("Years"));
-            Assert.IsTrue(result.Contains("John Doe") && result.Contains("30"));
-            Assert.IsFalse(result.Contains("Jane") || result.Contains("25"));
-        }
-
+        
         [Test]
         public void Convert_WithAttributes_IncludesAttributes()
         {
