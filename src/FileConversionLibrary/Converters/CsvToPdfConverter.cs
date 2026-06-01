@@ -242,6 +242,15 @@ public class CsvToPdfConverter : IConverter<CsvData, byte[]>
             }
 
             document.Add(table);
+
+            if (input.Rows.Count == 0)
+            {
+                var noDataParagraph = new Paragraph("No data available.", cellFont);
+                noDataParagraph.Alignment = Element.ALIGN_CENTER;
+                noDataParagraph.SpacingBefore = 10f;
+                document.Add(noDataParagraph);
+            }
+
             document.Close();
 
             return memoryStream.ToArray();

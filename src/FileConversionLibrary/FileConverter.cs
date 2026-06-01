@@ -92,8 +92,7 @@ public class FileConverter
             
             var csvData = await _csvReader.ReadAsync(csvFilePath);
 
-            var converter = _converterFactory.GetConverter<CsvData, string>(OutputFormat.Json);
-            var json = converter.Convert(csvData, options);
+            var json = _inMemoryConverter.ConvertCsvToJson(csvData, options);
 
             await _jsonWriter.WriteAsync(jsonOutputPath, json, options);
         }
@@ -121,8 +120,7 @@ public class FileConverter
             
             var csvData = await _csvReader.ReadAsync(csvFilePath);
 
-            var converter = _converterFactory.GetConverter<CsvData, byte[]>(OutputFormat.Pdf);
-            var pdfData = converter.Convert(csvData, options);
+            var pdfData = _inMemoryConverter.ConvertCsvToPdf(csvData, options);
 
             await _pdfWriter.WriteAsync(pdfOutputPath, pdfData);
         }
@@ -150,8 +148,7 @@ public class FileConverter
             
             var csvData = await _csvReader.ReadAsync(csvFilePath);
 
-            var converter = _converterFactory.GetConverter<CsvData, byte[]>(OutputFormat.Word);
-            var wordData = converter.Convert(csvData, options);
+            var wordData = _inMemoryConverter.ConvertCsvToWord(csvData, options);
 
             await _wordWriter.WriteAsync(wordOutputPath, wordData);
         }
@@ -179,8 +176,7 @@ public class FileConverter
             
             var csvData = await _csvReader.ReadAsync(csvFilePath);
 
-            var converter = _converterFactory.GetConverter<CsvData, string>(OutputFormat.Xml);
-            var xml = converter.Convert(csvData, options);
+            var xml = _inMemoryConverter.ConvertCsvToXml(csvData, options);
 
             await _xmlWriter.WriteAsync(xmlOutputPath, xml, options);
         }
@@ -208,8 +204,7 @@ public class FileConverter
             
             var csvData = await _csvReader.ReadAsync(csvFilePath);
 
-            var converter = _converterFactory.GetConverter<CsvData, string>(OutputFormat.Yaml);
-            var yaml = converter.Convert(csvData, options);
+            var yaml = _inMemoryConverter.ConvertCsvToYaml(csvData, options);
 
             await _yamlWriter.WriteAsync(yamlOutputPath, yaml);
         }
@@ -237,8 +232,7 @@ public class FileConverter
 
             var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
-            var converter = _converterFactory.GetConverter<XmlData, string>(OutputFormat.Csv);
-            var csv = converter.Convert(xmlData, options);
+            var csv = _inMemoryConverter.ConvertXmlToCsv(xmlData, options);
 
             await _csvWriter.WriteAsync(csvOutputPath, csv);
         }
@@ -266,8 +260,7 @@ public class FileConverter
             
             var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
-            var converter = _converterFactory.GetConverter<XmlData, string>(OutputFormat.Json);
-            var json = converter.Convert(xmlData, options);
+            var json = _inMemoryConverter.ConvertXmlToJson(xmlData, options);
 
             await _jsonWriter.WriteAsync(jsonOutputPath, json, options);
         }
@@ -295,8 +288,7 @@ public class FileConverter
             
             var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
-            var converter = _converterFactory.GetConverter<XmlData, byte[]>(OutputFormat.Pdf);
-            var pdfData = converter.Convert(xmlData, options);
+            var pdfData = _inMemoryConverter.ConvertXmlToPdf(xmlData, options);
 
             await _pdfWriter.WriteAsync(pdfOutputPath, pdfData);
         }
@@ -324,8 +316,7 @@ public class FileConverter
             
             var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
-            var converter = _converterFactory.GetConverter<XmlData, byte[]>(OutputFormat.Word);
-            var wordData = converter.Convert(xmlData, options);
+            var wordData = _inMemoryConverter.ConvertXmlToWord(xmlData, options);
 
             await _wordWriter.WriteAsync(wordOutputPath, wordData);
         }
@@ -353,8 +344,7 @@ public class FileConverter
             
             var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
-            var converter = _converterFactory.GetConverter<XmlData, string>(OutputFormat.Yaml);
-            var yaml = converter.Convert(xmlData, options);
+            var yaml = _inMemoryConverter.ConvertXmlToYaml(xmlData, options);
 
             await _yamlWriter.WriteAsync(yamlOutputPath, yaml);
         }
