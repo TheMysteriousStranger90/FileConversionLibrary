@@ -1,0 +1,26 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+
+    <!-- CA1303: Do not pass literals as localized parameters - library has no localization -->
+    <!-- CA1848: Use LoggerMessage - library does not use Microsoft.Extensions.Logging -->
+    <!-- CA1002: Do not expose generic lists - existing public API uses List<T> -->
+    <NoWarn>$(NoWarn);CA1303;CA1848;CA1002;NU1507</NoWarn>
+  </PropertyGroup>
+
+  <!-- Relax rules for test and sample projects -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true' Or '$(OutputType)' == 'Exe'">
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CA1303;CA1848;CA1062;CA2007;CA1707</NoWarn>
+  </PropertyGroup>
+
+</Project>

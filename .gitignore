@@ -1,8 +1,49 @@
+## Build output
 bin/
 obj/
+out/
+
+## NuGet
 /packages/
+*.nupkg
+*.snupkg
+nupkg/
+!**/assets/
+
+## IDE - Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+## IDE - JetBrains Rider
+.idea/
+*.iml
 riderModule.iml
 /_ReSharper.Caches/
+*.DotSettings.user
 
-.idea/
-nupkg/
+## IDE - VS Code
+.vscode/
+!.vscode/extensions.json
+
+## OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## Logs
+*.log
+
+## Test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+## Temp / scripts
+fix_*.py
+update_*.py
+*.bak

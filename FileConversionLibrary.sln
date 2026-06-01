@@ -1,28 +1,38 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileConversionLibrary", "FileConversionLibrary\FileConversionLibrary.csproj", "{834D918D-1FE6-4954-B29E-E578A3D75850}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1A1A1A1-A1A1-A1A1-A1A1-A1A1A1A1A1A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileConversionLibrary.Tests", "FileConversionLibrary.Tests\FileConversionLibrary.Tests.csproj", "{AD889C7E-9909-4DF4-82F0-F6741B16F043}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C3C3C3C3-C3C3-C3C3-C3C3-C3C3C3C3C3C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileConversionLibraryConsoleExample", "FileConversionLibraryConsoleExample\FileConversionLibraryConsoleExample.csproj", "{40D4EEC9-D867-40B8-AD80-69B2C085B5CB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileConversionLibraryConsoleExample", "samples\FileConversionLibraryConsoleExample\FileConversionLibraryConsoleExample.csproj", "{40D4EEC9-D867-40B8-AD80-69B2C085B5CB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileConversionLibrary", "src\FileConversionLibrary\FileConversionLibrary.csproj", "{E5E5E5E5-E5E5-E5E5-E5E5-E5E5E5E5E5E5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D9A44480-71ED-4501-A3C3-C75DE2082D66}"
+ProjectSection(SolutionItems) = preProject
+Directory.Build.props = Directory.Build.props
+Directory.Packages.props = Directory.Packages.props
+EndProjectSection
 EndProject
 Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{834D918D-1FE6-4954-B29E-E578A3D75850}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{834D918D-1FE6-4954-B29E-E578A3D75850}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{834D918D-1FE6-4954-B29E-E578A3D75850}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{834D918D-1FE6-4954-B29E-E578A3D75850}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AD889C7E-9909-4DF4-82F0-F6741B16F043}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AD889C7E-9909-4DF4-82F0-F6741B16F043}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AD889C7E-9909-4DF4-82F0-F6741B16F043}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AD889C7E-9909-4DF4-82F0-F6741B16F043}.Release|Any CPU.Build.0 = Release|Any CPU
-		{40D4EEC9-D867-40B8-AD80-69B2C085B5CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{40D4EEC9-D867-40B8-AD80-69B2C085B5CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{40D4EEC9-D867-40B8-AD80-69B2C085B5CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{40D4EEC9-D867-40B8-AD80-69B2C085B5CB}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
+GlobalSection(SolutionConfigurationPlatforms) = preSolution
+Debug|Any CPU = Debug|Any CPU
+Release|Any CPU = Release|Any CPU
+EndGlobalSection
+GlobalSection(ProjectConfigurationPlatforms) = postSolution
+{E5E5E5E5-E5E5-E5E5-E5E5-E5E5E5E5E5E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+{E5E5E5E5-E5E5-E5E5-E5E5-E5E5E5E5E5E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+{E5E5E5E5-E5E5-E5E5-E5E5-E5E5E5E5E5E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+{E5E5E5E5-E5E5-E5E5-E5E5-E5E5E5E5E5E5}.Release|Any CPU.Build.0 = Release|Any CPU
+{40D4EEC9-D867-40B8-AD80-69B2C085B5CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+{40D4EEC9-D867-40B8-AD80-69B2C085B5CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+{40D4EEC9-D867-40B8-AD80-69B2C085B5CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+{40D4EEC9-D867-40B8-AD80-69B2C085B5CB}.Release|Any CPU.Build.0 = Release|Any CPU
+EndGlobalSection
+GlobalSection(NestedProjects) = preSolution
+{E5E5E5E5-E5E5-E5E5-E5E5-E5E5E5E5E5E5} = {A1A1A1A1-A1A1-A1A1-A1A1-A1A1A1A1A1A1}
+{40D4EEC9-D867-40B8-AD80-69B2C085B5CB} = {C3C3C3C3-C3C3-C3C3-C3C3-C3C3C3C3C3C3}
+EndGlobalSection
 EndGlobal
