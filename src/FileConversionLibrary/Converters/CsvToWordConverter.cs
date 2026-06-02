@@ -346,6 +346,25 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
         }
 
         body.AppendChild(table);
+
+        if (input.Rows.Count == 0)
+        {
+            var noDataParagraph = new Paragraph();
+            var noDataRun = new Run();
+            var noDataRunProperties = new RunProperties(
+                new FontSize { Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) },
+                new Italic(),
+                new RunFonts { Ascii = fontFamily }
+            );
+            noDataRun.AppendChild(noDataRunProperties);
+            noDataRun.AppendChild(new Text("No data available."));
+            noDataParagraph.AppendChild(new ParagraphProperties(
+                new Justification { Val = JustificationValues.Center },
+                new SpacingBetweenLines { Before = "120" }
+            ));
+            noDataParagraph.AppendChild(noDataRun);
+            body.AppendChild(noDataParagraph);
+        }
     }
 
     private static RunProperties CreateHeaderRunProperties(string fontFamily, int fontSize, string headerStyle)
