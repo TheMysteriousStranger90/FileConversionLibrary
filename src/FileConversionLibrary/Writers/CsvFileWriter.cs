@@ -19,7 +19,7 @@ public class CsvFileWriter : IFileWriter<string>
             {
                 filePath = Path.ChangeExtension(filePath, ".csv");
             }
-            
+
             await File.WriteAllTextAsync(filePath, data);
         }
         catch (Exception ex)

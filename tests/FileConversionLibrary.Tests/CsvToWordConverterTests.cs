@@ -32,7 +32,7 @@ public class CsvToWordConverterTests
         using var ms = new MemoryStream(docxBytes);
         using var zip = new ZipArchive(ms, ZipArchiveMode.Read);
         var entry = zip.GetEntry("word/document.xml")
-            ?? throw new InvalidDataException("word/document.xml not found");
+                    ?? throw new InvalidDataException("word/document.xml not found");
         using var reader = new StreamReader(entry.Open());
         return reader.ReadToEnd();
     }

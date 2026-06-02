@@ -14,7 +14,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
         {
             throw new ArgumentException("Invalid XML data");
         }
-        
+
         bool useTable = true;
         bool addHeaderRow = true;
         bool formatAsHierarchy = false;
@@ -49,12 +49,12 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
             {
                 formatAsHierarchy = hierarchyValue;
             }
-            
+
             if (optionsDict.TryGetValue("includeCData", out var cdata) && cdata is bool cdataValue)
             {
                 includeCData = cdataValue;
             }
-            
+
             if (optionsDict.TryGetValue("includeComments", out var comments) && comments is bool commentsValue)
             {
                 includeComments = commentsValue;
@@ -67,22 +67,22 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
             {
                 var mainPart = wordDocument.AddMainDocumentPart();
                 mainPart.Document = new Document();
-                
+
                 var stylesPart = mainPart.AddNewPart<StyleDefinitionsPart>();
                 GenerateStyleDefinitions(stylesPart);
 
                 var body = mainPart.Document.AppendChild(new Body());
-                
+
                 var titleParagraph = body.AppendChild(new Paragraph(
                     new ParagraphProperties(new ParagraphStyleId { Val = "Title" }),
                     new Run(
                         new Text("XML Data Export")
                     )
                 ));
-                
+
                 if (formatAsHierarchy && input.Document?.Root != null)
                 {
-                    AddHierarchicalContent(body, input.Document.Root, fontFamily, fontSize, 
+                    AddHierarchicalContent(body, input.Document.Root, fontFamily, fontSize,
                         includeCData, includeComments);
                 }
                 else if (useTable && input.Headers != null && input.Rows != null && input.Headers.Length > 0)
@@ -102,18 +102,18 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
                             new Text("XML Structure (Hierarchical View)")
                         )
                     ));
-                    
-                    AddHierarchicalContent(body, input.Document.Root, fontFamily, fontSize, 
+
+                    AddHierarchicalContent(body, input.Document.Root, fontFamily, fontSize,
                         includeCData, includeComments);
                 }
-                
+
                 mainPart.Document.Save();
             }
 
             return ms.ToArray();
         }
     }
-    
+
     private static Table CreateTable(XmlData input, string fontFamily, int fontSize, bool addHeaderRow)
     {
         var table = new Table(
@@ -129,7 +129,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
                 )
             )
         );
-        
+
         if (addHeaderRow && input.Headers != null)
         {
             var headerRow = new TableRow();
@@ -160,7 +160,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
 
             table.Append(headerRow);
         }
-        
+
         if (input.Rows != null)
         {
             foreach (var rowData in input.Rows)
@@ -170,7 +170,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
                 for (int i = 0; i < rowData.Length && i < (input.Headers?.Length ?? 0); i++)
                 {
                     var cellText = rowData[i] ?? string.Empty;
-                    
+
                     cellText = new string(cellText.Where(c => !char.IsControl(c)).ToArray());
 
                     var cell = new TableCell(
@@ -178,7 +178,10 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
                             new Run(
                                 new RunProperties(
                                     new RunFonts { Ascii = fontFamily },
-                                    new FontSize { Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) }
+                                    new FontSize
+                                    {
+                                        Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture)
+                                    }
                                 ),
                                 new Text(cellText)
                             )
@@ -193,7 +196,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
 
         return table;
     }
-    
+
     private static void AddSimpleContent(Body body, XmlData input, string fontFamily, int fontSize)
     {
         var headers = string.Join(", ", input.Headers?.Select(h => h ?? string.Empty) ?? Array.Empty<string>());
@@ -207,7 +210,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
             )
         ));
         headerRun.AppendChild(new Text("Headers: " + headers));
-        
+
         if (input.Rows != null)
         {
             foreach (var row in input.Rows)
@@ -221,15 +224,17 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
                 var run = para.AppendChild(new Run(
                     new RunProperties(
                         new RunFonts { Ascii = fontFamily },
-                        new FontSize { Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) }
+                        new FontSize
+                            { Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) }
                     )
                 ));
                 run.AppendChild(new Text(rowText));
             }
         }
     }
-    
-    private static void AddHierarchicalContent(Body body, System.Xml.Linq.XElement element, string fontFamily, int fontSize,
+
+    private static void AddHierarchicalContent(Body body, System.Xml.Linq.XElement element, string fontFamily,
+        int fontSize,
         bool includeCData, bool includeComments, int level = 0)
     {
         string headingStyle = level == 0 ? "Heading1" : "Heading" + Math.Min(level + 1, 9);
@@ -244,24 +249,26 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
                 new Text(element.Name.LocalName)
             )
         ));
-        
+
         foreach (var attr in element.Attributes().Where(a => !a.IsNamespaceDeclaration))
         {
             var attrPara = body.AppendChild(new Paragraph(
                 new ParagraphProperties(
-                    new Indentation { Left = ((level + 1) * 360).ToString(System.Globalization.CultureInfo.InvariantCulture) }
+                    new Indentation
+                        { Left = ((level + 1) * 360).ToString(System.Globalization.CultureInfo.InvariantCulture) }
                 ),
                 new Run(
                     new RunProperties(
                         new RunFonts { Ascii = fontFamily },
-                        new FontSize { Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) },
+                        new FontSize
+                            { Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) },
                         new Italic()
                     ),
                     new Text($"@{attr.Name.LocalName}: {attr.Value}")
                 )
             ));
         }
-        
+
         if (includeComments)
         {
             var comments = element.Nodes().OfType<System.Xml.Linq.XComment>().ToList();
@@ -269,13 +276,15 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
             {
                 var commentPara = body.AppendChild(new Paragraph(
                     new ParagraphProperties(
-                        new Indentation { Left = ((level + 1) * 360).ToString(System.Globalization.CultureInfo.InvariantCulture) },
+                        new Indentation
+                            { Left = ((level + 1) * 360).ToString(System.Globalization.CultureInfo.InvariantCulture) },
                         new ParagraphStyleId { Val = "Comment" }
                     ),
                     new Run(
                         new RunProperties(
                             new RunFonts { Ascii = fontFamily },
-                            new FontSize { Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) },
+                            new FontSize
+                                { Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) },
                             new Italic(),
                             new Color { Val = "808080" }
                         ),
@@ -284,7 +293,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
                 ));
             }
         }
-        
+
         string? textContent = element.Nodes()
             .OfType<System.Xml.Linq.XText>()
             .Where(t => !string.IsNullOrWhiteSpace(t.Value))
@@ -297,41 +306,45 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
 
             var contentPara = body.AppendChild(new Paragraph(
                 new ParagraphProperties(
-                    new Indentation { Left = ((level + 1) * 360).ToString(System.Globalization.CultureInfo.InvariantCulture) }
+                    new Indentation
+                        { Left = ((level + 1) * 360).ToString(System.Globalization.CultureInfo.InvariantCulture) }
                 ),
                 new Run(
                     new RunProperties(
                         new RunFonts { Ascii = fontFamily },
-                        new FontSize { Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) }
+                        new FontSize
+                            { Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) }
                     ),
                     new Text($"Value: {textContent}")
                 )
             ));
         }
-        
+
         if (includeCData)
         {
             var cdataContent = element.Nodes()
                 .OfType<System.Xml.Linq.XCData>()
                 .Select(c => c.Value)
                 .FirstOrDefault();
-                
+
             if (!string.IsNullOrEmpty(cdataContent))
             {
                 var cdataHeaderPara = body.AppendChild(new Paragraph(
                     new ParagraphProperties(
-                        new Indentation { Left = ((level + 1) * 360).ToString(System.Globalization.CultureInfo.InvariantCulture) }
+                        new Indentation
+                            { Left = ((level + 1) * 360).ToString(System.Globalization.CultureInfo.InvariantCulture) }
                     ),
                     new Run(
                         new RunProperties(
                             new RunFonts { Ascii = fontFamily },
-                            new FontSize { Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) },
+                            new FontSize
+                                { Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) },
                             new Bold()
                         ),
                         new Text("CDATA:")
                     )
                 ));
-                
+
                 var cdataLines = cdataContent.Split('\n');
                 foreach (var line in cdataLines)
                 {
@@ -340,13 +353,20 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
                     {
                         var cdataLinePara = body.AppendChild(new Paragraph(
                             new ParagraphProperties(
-                                new Indentation { Left = ((level + 1) * 480).ToString(System.Globalization.CultureInfo.InvariantCulture) },
+                                new Indentation
+                                {
+                                    Left = ((level + 1) * 480).ToString(System.Globalization.CultureInfo
+                                        .InvariantCulture)
+                                },
                                 new ParagraphStyleId { Val = "Code" }
                             ),
                             new Run(
                                 new RunProperties(
                                     new RunFonts { Ascii = "Courier New" },
-                                    new FontSize { Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) }
+                                    new FontSize
+                                    {
+                                        Val = (fontSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture)
+                                    }
                                 ),
                                 new Text(trimmedLine)
                             )
@@ -355,7 +375,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
                 }
             }
         }
-        
+
         foreach (var child in element.Elements())
         {
             AddHierarchicalContent(body, child, fontFamily, fontSize, includeCData, includeComments, level + 1);
@@ -365,7 +385,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
     private static void GenerateStyleDefinitions(StyleDefinitionsPart stylesPart)
     {
         var styles = new Styles();
-        
+
         var normalStyle = new Style
         {
             Type = StyleValues.Paragraph,
@@ -381,7 +401,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
         normalStyle.Append(normalRunProps);
 
         styles.Append(normalStyle);
-        
+
         var titleStyle = new Style
         {
             Type = StyleValues.Paragraph,
@@ -401,7 +421,7 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
         titleStyle.Append(titleRunProps);
 
         styles.Append(titleStyle);
-        
+
         var codeStyle = new Style
         {
             Type = StyleValues.Paragraph,
@@ -409,17 +429,17 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
         };
         codeStyle.Append(new StyleName { Val = "Code" });
         codeStyle.Append(new BasedOn { Val = "Normal" });
-        
+
         var codeRunProps = new StyleRunProperties();
         codeRunProps.Append(new RunFonts { Ascii = "Courier New" });
         codeStyle.Append(codeRunProps);
-        
+
         var codeParaProps = new StyleParagraphProperties();
         codeParaProps.Append(new SpacingBetweenLines { Before = "120", After = "120" });
         codeStyle.Append(codeParaProps);
-        
+
         styles.Append(codeStyle);
-        
+
         var commentStyle = new Style
         {
             Type = StyleValues.Paragraph,
@@ -427,14 +447,14 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
         };
         commentStyle.Append(new StyleName { Val = "Comment" });
         commentStyle.Append(new BasedOn { Val = "Normal" });
-        
+
         var commentRunProps = new StyleRunProperties();
         commentRunProps.Append(new Italic());
         commentRunProps.Append(new Color { Val = "808080" });
         commentStyle.Append(commentRunProps);
-        
+
         styles.Append(commentStyle);
-        
+
         for (int i = 1; i <= 9; i++)
         {
             var headingStyle = new Style
@@ -449,17 +469,18 @@ public class XmlToWordConverter : IConverter<XmlData, byte[]>
             headingStyle.Append(headingParaProps);
 
             var headingRunProps = new StyleRunProperties();
-            
+
             int headingSize = 28 - (i * 2);
             if (headingSize < 22) headingSize = 22;
 
-            headingRunProps.Append(new FontSize { Val = (headingSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) });
+            headingRunProps.Append(new FontSize
+                { Val = (headingSize * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) });
 
             if (i <= 3)
             {
                 headingRunProps.Append(new Bold());
             }
-            
+
             if (i == 1)
                 headingRunProps.Append(new Color { Val = "2E74B5" });
 

@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Xml.Linq;
 using FileConversionLibrary.Interfaces;
 using FileConversionLibrary.Models;
@@ -72,7 +72,8 @@ public class XmlToCsvConverter : IConverter<XmlData, string>
 
         if (recordElements.Count == 0)
         {
-            throw new ArgumentException("No record elements found in XML data");
+            // Return empty CSV instead of throwing exception
+            return string.Empty;
         }
 
         if (recordElements.Any(e => e.HasElements) &&
@@ -96,7 +97,8 @@ public class XmlToCsvConverter : IConverter<XmlData, string>
 
         if (headers.Count == 0)
         {
-            throw new ArgumentException("No headers found in XML data");
+            // Return empty CSV instead of throwing exception
+            return string.Empty;
         }
 
         var sb = new StringBuilder();

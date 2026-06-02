@@ -194,7 +194,9 @@ public class CsvToPdfConverter : IConverter<CsvData, byte[]>
 
                 if (includeRowNumbers)
                 {
-                    var rowNumberCell = new PdfPCell(new Phrase((i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture), cellFont));
+                    var rowNumberCell =
+                        new PdfPCell(new Phrase((i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture),
+                            cellFont));
                     if (rowBackground != null)
                     {
                         rowNumberCell.BackgroundColor = rowBackground;

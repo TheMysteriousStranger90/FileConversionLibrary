@@ -62,12 +62,12 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
             {
                 columnWidths = widthsArray;
             }
-            
+
             if (optionsDict.TryGetValue("includeCData", out var cdata) && cdata is bool cdataValue)
             {
                 includeCData = cdataValue;
             }
-            
+
             if (optionsDict.TryGetValue("includeComments", out var comments) && comments is bool commentsValue)
             {
                 includeComments = commentsValue;
@@ -101,7 +101,7 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
                 title.SpacingAfter = 20f;
                 document.Add(title);
 
-                AddHierarchicalContent(document, input.Document.Root, font, cdataFont, commentFont, 
+                AddHierarchicalContent(document, input.Document.Root, font, cdataFont, commentFont,
                     includeCData, includeComments);
             }
             else if (input.Headers != null && input.Rows != null && input.Headers.Length > 0)
@@ -175,10 +175,10 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
             {
                 document.Add(new Paragraph("XML Structure (Hierarchical View):", headerFont));
                 document.Add(new Paragraph(" "));
-                
+
                 if (input.Document?.Root != null)
                 {
-                    AddHierarchicalContent(document, input.Document.Root, font, cdataFont, commentFont, 
+                    AddHierarchicalContent(document, input.Document.Root, font, cdataFont, commentFont,
                         includeCData, includeComments);
                 }
                 else
@@ -193,7 +193,7 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
         }
     }
 
-    private static void AddHierarchicalContent(Document document, XElement element, Font font, Font cdataFont, 
+    private static void AddHierarchicalContent(Document document, XElement element, Font font, Font cdataFont,
         Font commentFont, bool includeCData, bool includeComments, int level = 0)
     {
         string indent = new string(' ', level * 4);
@@ -246,7 +246,7 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
             {
                 var cdataText = $"{indent}  CDATA:";
                 document.Add(new Paragraph(cdataText, font));
-                
+
                 var cdataLines = cdataValue.Split('\n');
                 foreach (var line in cdataLines)
                 {
@@ -258,7 +258,7 @@ public class XmlToPdfConverter : IConverter<XmlData, byte[]>
 
         foreach (var child in element.Elements())
         {
-            AddHierarchicalContent(document, child, font, cdataFont, commentFont, 
+            AddHierarchicalContent(document, child, font, cdataFont, commentFont,
                 includeCData, includeComments, level + 1);
         }
     }

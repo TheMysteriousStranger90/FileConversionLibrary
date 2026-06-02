@@ -8,7 +8,8 @@ namespace FileConversionLibrary.Factories;
 
 public class ConverterFactory
 {
-    [SuppressMessage("Performance", "CA1822:MarkMembersAsStatic", Justification = "Factory method may have instance state in future versions")]
+    [SuppressMessage("Performance", "CA1822:MarkMembersAsStatic",
+        Justification = "Factory method may have instance state in future versions")]
     public IConverter<TInput, TOutput> GetConverter<TInput, TOutput>(OutputFormat format = OutputFormat.Json)
     {
         if (typeof(TInput) == typeof(CsvData) && typeof(TOutput) == typeof(string))
@@ -51,12 +52,12 @@ public class ConverterFactory
         {
             return (IConverter<TInput, TOutput>)(object)new XmlToPdfConverter();
         }
-        
+
         if (typeof(TInput) == typeof(XmlData) && typeof(TOutput) == typeof(byte[]) && format == OutputFormat.Word)
         {
             return (IConverter<TInput, TOutput>)(object)new XmlToWordConverter();
         }
-        
+
         if (typeof(TInput) == typeof(XmlData) && typeof(TOutput) == typeof(string) && format == OutputFormat.Yaml)
         {
             return (IConverter<TInput, TOutput>)(object)new XmlToYamlConverter();

@@ -7,8 +7,9 @@
     <Title>FileConversionLibrary</Title>
     <Authors>Bohdan Harabadzhyu</Authors>
     <Description>FileConversionLibrary is a .NET library for converting files between different formats.
-It supports converting CSV files to XML, PDF, Word, JSON, and YAML formats, as well as converting XML files to CSV, PDF, Word, JSON, and YAML formats.
-The library provides asynchronous methods for all conversions and includes comprehensive error handling.</Description>
+      It supports converting CSV files to XML, PDF, Word, JSON, and YAML formats, as well as converting XML files to CSV, PDF, Word, JSON, and YAML formats.
+      The library provides asynchronous methods for all conversions and includes comprehensive error handling.
+    </Description>
     <RepositoryUrl>https://github.com/TheMysteriousStranger90/FileConversionLibrary</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/TheMysteriousStranger90/FileConversionLibrary</PackageProjectUrl>
@@ -34,11 +35,11 @@ The library provides asynchronous methods for all conversions and includes compr
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CsvHelper" />
-    <PackageReference Include="DocumentFormat.OpenXml" />
-    <PackageReference Include="iTextSharp" />
-    <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="YamlDotNet" />
+    <PackageReference Include="CsvHelper"/>
+    <PackageReference Include="DocumentFormat.OpenXml"/>
+    <PackageReference Include="iTextSharp"/>
+    <PackageReference Include="Newtonsoft.Json"/>
+    <PackageReference Include="YamlDotNet"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -47,7 +48,7 @@ The library provides asynchronous methods for all conversions and includes compr
       <PackagePath>\</PackagePath>
       <Link>Cover.png</Link>
     </None>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>

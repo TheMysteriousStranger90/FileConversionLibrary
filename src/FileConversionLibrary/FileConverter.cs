@@ -24,7 +24,7 @@ public class FileConverter
     private readonly ConverterFactory _converterFactory;
     private readonly StreamConverter _streamConverter; // CA1859: concrete type for performance
     private readonly InMemoryConverter _inMemoryConverter; // CA1859: concrete type for performance
-    
+
     private static FileConverter? _instance;
 
     public FileConverter()
@@ -39,7 +39,7 @@ public class FileConverter
         _xmlReader = new XmlFileReader(_exceptionHandler);
         _csvWriter = new CsvFileWriter(_exceptionHandler);
         _converterFactory = new ConverterFactory();
-        
+
         _inMemoryConverter = new InMemoryConverter(_converterFactory, _exceptionHandler);
         _streamConverter = new StreamConverter(_inMemoryConverter, _exceptionHandler);
     }
@@ -75,7 +75,8 @@ public class FileConverter
         return _instance ??= new FileConverter();
     }
 
-    public async Task ConvertCsvToJsonAsync(string csvFilePath, string jsonOutputPath, JsonConversionOptions? options = null)
+    public async Task ConvertCsvToJsonAsync(string csvFilePath, string jsonOutputPath,
+        JsonConversionOptions? options = null)
     {
         try
         {
@@ -89,7 +90,7 @@ public class FileConverter
             {
                 Directory.CreateDirectory(outputDirectory);
             }
-            
+
             var csvData = await _csvReader.ReadAsync(csvFilePath);
 
             var json = _inMemoryConverter.ConvertCsvToJson(csvData, options);
@@ -103,7 +104,8 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertCsvToPdfAsync(string csvFilePath, string pdfOutputPath, PdfConversionOptions? options = null)
+    public async Task ConvertCsvToPdfAsync(string csvFilePath, string pdfOutputPath,
+        PdfConversionOptions? options = null)
     {
         try
         {
@@ -117,7 +119,7 @@ public class FileConverter
             {
                 Directory.CreateDirectory(outputDirectory);
             }
-            
+
             var csvData = await _csvReader.ReadAsync(csvFilePath);
 
             var pdfData = _inMemoryConverter.ConvertCsvToPdf(csvData, options);
@@ -131,7 +133,8 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertCsvToWordAsync(string csvFilePath, string wordOutputPath, WordConversionOptions? options = null)
+    public async Task ConvertCsvToWordAsync(string csvFilePath, string wordOutputPath,
+        WordConversionOptions? options = null)
     {
         try
         {
@@ -145,7 +148,7 @@ public class FileConverter
             {
                 Directory.CreateDirectory(outputDirectory);
             }
-            
+
             var csvData = await _csvReader.ReadAsync(csvFilePath);
 
             var wordData = _inMemoryConverter.ConvertCsvToWord(csvData, options);
@@ -159,7 +162,8 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertCsvToXmlAsync(string csvFilePath, string xmlOutputPath, XmlConversionOptions? options = null)
+    public async Task ConvertCsvToXmlAsync(string csvFilePath, string xmlOutputPath,
+        XmlConversionOptions? options = null)
     {
         try
         {
@@ -173,7 +177,7 @@ public class FileConverter
             {
                 Directory.CreateDirectory(outputDirectory);
             }
-            
+
             var csvData = await _csvReader.ReadAsync(csvFilePath);
 
             var xml = _inMemoryConverter.ConvertCsvToXml(csvData, options);
@@ -187,7 +191,8 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertCsvToYamlAsync(string csvFilePath, string yamlOutputPath, YamlConversionOptions? options = null)
+    public async Task ConvertCsvToYamlAsync(string csvFilePath, string yamlOutputPath,
+        YamlConversionOptions? options = null)
     {
         try
         {
@@ -201,7 +206,7 @@ public class FileConverter
             {
                 Directory.CreateDirectory(outputDirectory);
             }
-            
+
             var csvData = await _csvReader.ReadAsync(csvFilePath);
 
             var yaml = _inMemoryConverter.ConvertCsvToYaml(csvData, options);
@@ -215,7 +220,8 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertXmlToCsvAsync(string xmlFilePath, string csvOutputPath, CsvConversionOptions? options = null)
+    public async Task ConvertXmlToCsvAsync(string xmlFilePath, string csvOutputPath,
+        CsvConversionOptions? options = null)
     {
         try
         {
@@ -243,7 +249,8 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertXmlToJsonAsync(string xmlFilePath, string jsonOutputPath, JsonConversionOptions? options = null)
+    public async Task ConvertXmlToJsonAsync(string xmlFilePath, string jsonOutputPath,
+        JsonConversionOptions? options = null)
     {
         try
         {
@@ -257,7 +264,7 @@ public class FileConverter
             {
                 Directory.CreateDirectory(outputDirectory);
             }
-            
+
             var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
             var json = _inMemoryConverter.ConvertXmlToJson(xmlData, options);
@@ -271,7 +278,8 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertXmlToPdfAsync(string xmlFilePath, string pdfOutputPath, PdfConversionOptions? options = null)
+    public async Task ConvertXmlToPdfAsync(string xmlFilePath, string pdfOutputPath,
+        PdfConversionOptions? options = null)
     {
         try
         {
@@ -285,7 +293,7 @@ public class FileConverter
             {
                 Directory.CreateDirectory(outputDirectory);
             }
-            
+
             var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
             var pdfData = _inMemoryConverter.ConvertXmlToPdf(xmlData, options);
@@ -299,7 +307,8 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertXmlToWordAsync(string xmlFilePath, string wordOutputPath, WordConversionOptions? options = null)
+    public async Task ConvertXmlToWordAsync(string xmlFilePath, string wordOutputPath,
+        WordConversionOptions? options = null)
     {
         try
         {
@@ -313,7 +322,7 @@ public class FileConverter
             {
                 Directory.CreateDirectory(outputDirectory);
             }
-            
+
             var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
             var wordData = _inMemoryConverter.ConvertXmlToWord(xmlData, options);
@@ -327,7 +336,8 @@ public class FileConverter
         }
     }
 
-    public async Task ConvertXmlToYamlAsync(string xmlFilePath, string yamlOutputPath, YamlConversionOptions? options = null)
+    public async Task ConvertXmlToYamlAsync(string xmlFilePath, string yamlOutputPath,
+        YamlConversionOptions? options = null)
     {
         try
         {
@@ -341,7 +351,7 @@ public class FileConverter
             {
                 Directory.CreateDirectory(outputDirectory);
             }
-            
+
             var xmlData = await _xmlReader.ReadAsync(xmlFilePath, options);
 
             var yaml = _inMemoryConverter.ConvertXmlToYaml(xmlData, options);
@@ -354,7 +364,7 @@ public class FileConverter
             throw new FileConversionException($"Failed to convert {xmlFilePath} to {yamlOutputPath}", ex);
         }
     }
-    
+
     public async Task<Stream> ConvertStreamAsync(Stream input, ConversionOptions options)
     {
         return await _streamConverter.ConvertAsync(input, options);
@@ -394,7 +404,7 @@ public class FileConverter
     {
         return _inMemoryConverter.ConvertCsvToYaml(data, options);
     }
-    
+
     public string ConvertXmlToCsv(XmlData data, CsvConversionOptions? options = null)
     {
         return _inMemoryConverter.ConvertXmlToCsv(data, options);

@@ -186,6 +186,7 @@ public class CsvToXmlConverter : IConverter<CsvData, string>
                 rootElement.Add(new XAttribute(XNamespace.Xmlns + ns.Key, ns.Value));
             }
         }
+
 /*
         if (includeTimestamp)
         {
@@ -373,7 +374,8 @@ public class CsvToXmlConverter : IConverter<CsvData, string>
                 .ToList();
     }
 
-    private static void ProcessRowData(XElement rowElement, string[] headers, string[] row, XmlOutputFormat outputFormat,
+    private static void ProcessRowData(XElement rowElement, string[] headers, string[] row,
+        XmlOutputFormat outputFormat,
         bool useCData, HashSet<int> attributeHeaders, bool validateXmlNames, XmlNamingConvention namingConvention,
         bool convertDataTypes, int skipColumnIndex = -1)
     {
@@ -445,7 +447,8 @@ public class CsvToXmlConverter : IConverter<CsvData, string>
         return new XElement(SanitizeXmlElementName(rowElementName, validateXmlNames, namingConvention));
     }
 
-    private static HashSet<int> DetermineAttributeFields(CsvData input, XmlOutputFormat format, int skipColumnIndex = -1)
+    private static HashSet<int> DetermineAttributeFields(CsvData input, XmlOutputFormat format,
+        int skipColumnIndex = -1)
     {
         var result = new HashSet<int>();
 
@@ -624,18 +627,18 @@ public class CsvToXmlConverter : IConverter<CsvData, string>
             .Replace("\"", "&quot;")
             .Replace("'", "&apos;");
     }
-    
+
     private static string GetXmlString(XDocument doc, bool preserveWhitespace)
     {
         var sb = new StringBuilder();
-    
+
         var version = doc.Declaration?.Version ?? "1.0";
         var encoding = doc.Declaration?.Encoding ?? "UTF-8";
         sb.Append(FormattableString.Invariant($"<?xml version=\"{version}\" encoding=\"{encoding}\"?>")).AppendLine();
-    
+
         var saveOptions = preserveWhitespace ? SaveOptions.None : SaveOptions.DisableFormatting;
         sb.Append(doc.ToString(saveOptions));
-    
+
         return sb.ToString();
     }
 }

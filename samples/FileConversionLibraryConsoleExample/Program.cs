@@ -82,7 +82,7 @@ sealed class Program
             @"C:\Users\User\Desktop\output1.yaml"
         );
         Console.WriteLine("✅ CSV to YAML conversion completed.");
-        
+
         // --- XML to Other Formats ---
         await fileConverter.ConvertXmlToCsvAsync(
             @"C:\Users\User\Desktop\xml_input.xml",
@@ -111,7 +111,7 @@ sealed class Program
             @"C:\Users\User\Desktop\xml_input.xml",
             @"C:\Users\User\Desktop\output2.yaml");
         Console.WriteLine("✅ XML to YAML conversion completed.");
-        
+
         Console.WriteLine();
     }
 
@@ -292,7 +292,8 @@ sealed class Program
 
             // For conversions that work with the full XML structure (JSON, YAML),
             // we provide the XDocument object directly.
-            var xmlContent = @"<?xml version=""1.0"" encoding=""UTF-8""?><Products><Product><ProductID>1</ProductID><ProductName>Laptop Pro</ProductName><Price>1299.99</Price><Category>Electronics</Category><InStock>true</InStock></Product><Product><ProductID>2</ProductID><ProductName>Office Chair</ProductName><Price>249.50</Price><Category>Furniture</Category><InStock>false</InStock></Product></Products>";
+            var xmlContent =
+                @"<?xml version=""1.0"" encoding=""UTF-8""?><Products><Product><ProductID>1</ProductID><ProductName>Laptop Pro</ProductName><Price>1299.99</Price><Category>Electronics</Category><InStock>true</InStock></Product><Product><ProductID>2</ProductID><ProductName>Office Chair</ProductName><Price>249.50</Price><Category>Furniture</Category><InStock>false</InStock></Product></Products>";
             var xmlDataForTree = new XmlData
             {
                 Document = XDocument.Parse(xmlContent)
@@ -304,22 +305,26 @@ sealed class Program
             Console.WriteLine("✅ In-Memory XML to CSV conversion completed.");
 
             // XML to JSON (uses the tree-based data)
-            var json = fileConverter.ConvertXmlToJson(xmlDataForTree, new JsonConversionOptions { ConvertValues = true, UseIndentation = true });
+            var json = fileConverter.ConvertXmlToJson(xmlDataForTree,
+                new JsonConversionOptions { ConvertValues = true, UseIndentation = true });
             File.WriteAllText(@"C:\Users\User\Desktop\xml_inmemory_output.json", json);
             Console.WriteLine("✅ In-Memory XML to JSON conversion completed.");
 
             // XML to PDF (uses the table-based data)
-            var pdfBytes = fileConverter.ConvertXmlToPdf(xmlDataForTables, new PdfConversionOptions { Title = "Product Catalog", AlternateRowColors = true });
+            var pdfBytes = fileConverter.ConvertXmlToPdf(xmlDataForTables,
+                new PdfConversionOptions { Title = "Product Catalog", AlternateRowColors = true });
             File.WriteAllBytes(@"C:\Users\User\Desktop\xml_inmemory_output.pdf", pdfBytes);
             Console.WriteLine("✅ In-Memory XML to PDF conversion completed.");
 
             // XML to Word (uses the table-based data)
-            var wordBytes = fileConverter.ConvertXmlToWord(xmlDataForTables, new WordConversionOptions { UseTable = true, FontFamily = "Arial" });
+            var wordBytes = fileConverter.ConvertXmlToWord(xmlDataForTables,
+                new WordConversionOptions { UseTable = true, FontFamily = "Arial" });
             File.WriteAllBytes(@"C:\Users\User\Desktop\xml_inmemory_output.docx", wordBytes);
             Console.WriteLine("✅ In-Memory XML to Word conversion completed.");
 
             // XML to YAML (uses the tree-based data)
-            var yaml = fileConverter.ConvertXmlToYaml(xmlDataForTree, new YamlConversionOptions { ConvertDataTypes = true });
+            var yaml = fileConverter.ConvertXmlToYaml(xmlDataForTree,
+                new YamlConversionOptions { ConvertDataTypes = true });
             File.WriteAllText(@"C:\Users\User\Desktop\xml_inmemory_output.yaml", yaml);
             Console.WriteLine("✅ In-Memory XML to YAML conversion completed.");
         }

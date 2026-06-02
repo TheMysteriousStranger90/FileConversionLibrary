@@ -177,7 +177,7 @@ public class InMemoryConverter : IInMemoryConverter
         foreach (var prop in properties)
         {
             if (prop.Name == nameof(ConversionOptions.CustomProperties)) continue;
-            
+
             var value = prop.GetValue(options);
             if (value != null)
             {

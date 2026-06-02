@@ -155,7 +155,7 @@ public class CsvToYamlConverter : IConverter<CsvData, string>
         }
 
         var sb = new StringBuilder();
-        
+
         if (includeMetadata)
         {
             //AddMetadata(sb, input, addTimestamp, customMetadata, indentSize);
@@ -188,6 +188,7 @@ public class CsvToYamlConverter : IConverter<CsvData, string>
 
         return sb.ToString();
     }
+
 /*
     private void AddMetadata(StringBuilder sb, CsvData input, bool addTimestamp,
         Dictionary<string, object>? customMetadata, int indentSize)
@@ -443,6 +444,7 @@ public class CsvToYamlConverter : IConverter<CsvData, string>
                 groupList = new List<string[]>();
                 groups[groupValue] = groupList;
             }
+
             groupList.Add(row);
         }
 
@@ -551,7 +553,8 @@ public class CsvToYamlConverter : IConverter<CsvData, string>
         return "string";
     }
 
-    private static object? ProcessValue(string? value, bool convertDataTypes, string? dateFormat, bool escapeSpecialChars)
+    private static object? ProcessValue(string? value, bool convertDataTypes, string? dateFormat,
+        bool escapeSpecialChars)
     {
         if (string.IsNullOrEmpty(value))
             return null;

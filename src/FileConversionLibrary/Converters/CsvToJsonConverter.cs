@@ -73,7 +73,8 @@ namespace FileConversionLibrary.Converters
                     preserveEmptyValues = preserveValue;
                 }
 
-                if (optionsDict.TryGetValue("dateFormat", out var dateFormatObj) && dateFormatObj is string dateFormatValue)
+                if (optionsDict.TryGetValue("dateFormat", out var dateFormatObj) &&
+                    dateFormatObj is string dateFormatValue)
                 {
                     dateFormat = dateFormatValue;
                 }
@@ -91,8 +92,9 @@ namespace FileConversionLibrary.Converters
 
             if (groupByColumn && !string.IsNullOrEmpty(groupByColumnName))
             {
-                return ConvertGrouped(input, groupByColumnName, convertValues, useIndentation, 
-                    preserveEmptyValues, dateFormat, convertArrays, arrayDelimiter, createNestedObjects, nestedSeparator);
+                return ConvertGrouped(input, groupByColumnName, convertValues, useIndentation,
+                    preserveEmptyValues, dateFormat, convertArrays, arrayDelimiter, createNestedObjects,
+                    nestedSeparator);
             }
 
             var resultList = new List<Dictionary<string, object>>();
@@ -119,7 +121,8 @@ namespace FileConversionLibrary.Converters
 
                     var processedValue = ProcessValue(value, convertValues, dateFormat, convertArrays, arrayDelimiter);
 
-                    if (createNestedObjects && nestedSeparator != null && header.Contains(nestedSeparator, StringComparison.Ordinal))
+                    if (createNestedObjects && nestedSeparator != null &&
+                        header.Contains(nestedSeparator, StringComparison.Ordinal))
                     {
                         CreateNestedObject(rowDict, header, processedValue, nestedSeparator);
                     }
@@ -142,8 +145,8 @@ namespace FileConversionLibrary.Converters
             return JsonConvert.SerializeObject(resultList, jsonSettings);
         }
 
-        private static string ConvertGrouped(CsvData input, string groupByColumnName, bool convertValues, 
-            bool useIndentation, bool preserveEmptyValues, string? dateFormat, bool convertArrays, 
+        private static string ConvertGrouped(CsvData input, string groupByColumnName, bool convertValues,
+            bool useIndentation, bool preserveEmptyValues, string? dateFormat, bool convertArrays,
             string? arrayDelimiter, bool createNestedObjects, string? nestedSeparator)
         {
             var groupColumnIndex = Array.IndexOf(input.Headers, groupByColumnName);
@@ -180,7 +183,8 @@ namespace FileConversionLibrary.Converters
 
                     var processedValue = ProcessValue(value, convertValues, dateFormat, convertArrays, arrayDelimiter);
 
-                    if (createNestedObjects && nestedSeparator != null && header.Contains(nestedSeparator, StringComparison.Ordinal))
+                    if (createNestedObjects && nestedSeparator != null &&
+                        header.Contains(nestedSeparator, StringComparison.Ordinal))
                     {
                         CreateNestedObject(rowDict, header, processedValue, nestedSeparator);
                     }
@@ -202,7 +206,7 @@ namespace FileConversionLibrary.Converters
             return JsonConvert.SerializeObject(groups, jsonSettings);
         }
 
-        private static object ProcessValue(string? value, bool convertValues, string? dateFormat, 
+        private static object ProcessValue(string? value, bool convertValues, string? dateFormat,
             bool convertArrays, string? arrayDelimiter)
         {
             if (string.IsNullOrEmpty(value))
@@ -226,8 +230,8 @@ namespace FileConversionLibrary.Converters
 
             if (!string.IsNullOrEmpty(dateFormat))
             {
-                if (DateTime.TryParseExact(value, dateFormat, CultureInfo.InvariantCulture, 
-                    DateTimeStyles.None, out var dateValue))
+                if (DateTime.TryParseExact(value, dateFormat, CultureInfo.InvariantCulture,
+                        DateTimeStyles.None, out var dateValue))
                 {
                     return dateValue;
                 }
@@ -266,7 +270,8 @@ namespace FileConversionLibrary.Converters
             return value;
         }
 
-        private static void CreateNestedObject(Dictionary<string, object> target, string key, object value, string separator)
+        private static void CreateNestedObject(Dictionary<string, object> target, string key, object value,
+            string separator)
         {
             var parts = key.Split(separator, StringSplitOptions.RemoveEmptyEntries);
             var current = target;

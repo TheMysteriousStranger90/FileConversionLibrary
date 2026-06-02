@@ -110,7 +110,8 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
                 includeStatistics = statsValue;
             }
 
-            if (optionsDict.TryGetValue("pageOrientation", out var orientation) && orientation is string orientationValue)
+            if (optionsDict.TryGetValue("pageOrientation", out var orientation) &&
+                orientation is string orientationValue)
             {
                 pageOrientation = orientationValue;
             }
@@ -154,8 +155,8 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
                     }
                     else
                     {
-                        AddTableContent(body, input, fontFamily, fontSize, addHeaderRow, 
-                            includeRowNumbers, alternateRowColors, addBorders, autoFitTable, 
+                        AddTableContent(body, input, fontFamily, fontSize, addHeaderRow,
+                            includeRowNumbers, alternateRowColors, addBorders, autoFitTable,
                             headerStyle, tableWidth, wrapText);
                     }
                 }
@@ -248,8 +249,8 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
         body.AppendChild(timestampParagraph);
     }
 
-    private static void AddTableContent(Body body, CsvData input, string fontFamily, int fontSize, 
-        bool addHeaderRow, bool includeRowNumbers, bool alternateRowColors, bool addBorders, 
+    private static void AddTableContent(Body body, CsvData input, string fontFamily, int fontSize,
+        bool addHeaderRow, bool includeRowNumbers, bool alternateRowColors, bool addBorders,
         bool autoFitTable, string headerStyle, double tableWidth, bool wrapText)
     {
         var table = new Table();
@@ -269,7 +270,11 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
             tableProperties.AppendChild(tableBorders);
         }
 
-        var tableWidth100 = new TableWidth { Width = (tableWidth * 50).ToString(System.Globalization.CultureInfo.InvariantCulture), Type = TableWidthUnitValues.Pct };
+        var tableWidth100 = new TableWidth
+        {
+            Width = (tableWidth * 50).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            Type = TableWidthUnitValues.Pct
+        };
         tableProperties.AppendChild(tableWidth100);
 
         if (autoFitTable)
@@ -289,7 +294,7 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
         if (addHeaderRow)
         {
             var headerRow = new TableRow();
-            
+
             foreach (var header in headers)
             {
                 var headerCell = new TableCell();
@@ -329,7 +334,8 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
 
             if (includeRowNumbers)
             {
-                var numberCell = CreateDataCell((i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture), fontFamily, fontSize, 
+                var numberCell = CreateDataCell((i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    fontFamily, fontSize,
                     alternateRowColors && i % 2 == 1, wrapText);
                 tableRow.AppendChild(numberCell);
             }
@@ -337,7 +343,7 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
             for (int j = 0; j < input.Headers.Length; j++)
             {
                 var cellData = j < row.Length ? (row[j] ?? string.Empty) : string.Empty;
-                var cell = CreateDataCell(cellData, fontFamily, fontSize, 
+                var cell = CreateDataCell(cellData, fontFamily, fontSize,
                     alternateRowColors && i % 2 == 1, wrapText);
                 tableRow.AppendChild(cell);
             }
@@ -384,14 +390,15 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
                 break;
             case "heading":
                 runProperties.AppendChild(new Bold());
-                runProperties.AppendChild(new FontSize { Val = ((fontSize + 2) * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) });
+                runProperties.AppendChild(new FontSize
+                    { Val = ((fontSize + 2) * 2).ToString(System.Globalization.CultureInfo.InvariantCulture) });
                 break;
         }
 
         return runProperties;
     }
 
-    private static TableCell CreateDataCell(string content, string fontFamily, int fontSize, 
+    private static TableCell CreateDataCell(string content, string fontFamily, int fontSize,
         bool useAlternateColor, bool wrapText)
     {
         var cell = new TableCell();
@@ -409,7 +416,7 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
         paragraph.AppendChild(run);
 
         var cellProperties = new TableCellProperties();
-        
+
         if (useAlternateColor)
         {
             var shading = new Shading
@@ -433,7 +440,7 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
         return cell;
     }
 
-    private static void AddHierarchicalContent(Body body, CsvData input, string fontFamily, 
+    private static void AddHierarchicalContent(Body body, CsvData input, string fontFamily,
         int fontSize, bool includeRowNumbers)
     {
         for (int i = 0; i < input.Rows.Count; i++)
@@ -501,7 +508,7 @@ public class CsvToWordConverter : IConverter<CsvData, byte[]>
         }
     }
 
-    private static void AddParagraphContent(Body body, CsvData input, string fontFamily, 
+    private static void AddParagraphContent(Body body, CsvData input, string fontFamily,
         int fontSize, bool addHeaderRow)
     {
         if (addHeaderRow)

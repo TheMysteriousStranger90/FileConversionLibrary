@@ -58,7 +58,8 @@ public class XmlFileReader : IFileReader<XmlData>
         }
         catch (XmlException ex)
         {
-            _exceptionHandler?.Handle(new InvalidOperationException("Standard XML parser failed, trying manual parsing", ex));
+            _exceptionHandler?.Handle(new InvalidOperationException("Standard XML parser failed, trying manual parsing",
+                ex));
             return await ManualParseXmlAsync(filePath);
         }
         catch (Exception ex)
@@ -230,7 +231,8 @@ public class XmlFileReader : IFileReader<XmlData>
             catch (Exception parseEx)
             {
                 _exceptionHandler?.Handle(
-                    new InvalidOperationException("XDocument.Parse failed during manual parse, falling back to regex", parseEx));
+                    new InvalidOperationException("XDocument.Parse failed during manual parse, falling back to regex",
+                        parseEx));
 
                 var rows = new List<Dictionary<string, string>>();
                 var allHeaders = new HashSet<string>();
@@ -251,7 +253,8 @@ public class XmlFileReader : IFileReader<XmlData>
                         var elementName = elementMatch.Groups[1].Value;
                         var elementContent = elementMatch.Groups[2].Value;
 
-                        if (elementContent.StartsWith("<![CDATA[", StringComparison.Ordinal) && elementContent.EndsWith("]]>", StringComparison.Ordinal))
+                        if (elementContent.StartsWith("<![CDATA[", StringComparison.Ordinal) &&
+                            elementContent.EndsWith("]]>", StringComparison.Ordinal))
                         {
                             elementContent = elementContent.Substring(9, elementContent.Length - 12);
                         }
@@ -292,7 +295,8 @@ public class XmlFileReader : IFileReader<XmlData>
                     dataRows.Add(dataRow);
                 }
 
-                _exceptionHandler?.Handle(new InvalidOperationException("Successfully parsed XML using manual parser (fallback)"));
+                _exceptionHandler?.Handle(
+                    new InvalidOperationException("Successfully parsed XML using manual parser (fallback)"));
                 return new XmlData
                 {
                     Headers = headerArray,

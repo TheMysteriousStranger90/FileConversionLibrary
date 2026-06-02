@@ -182,7 +182,7 @@ public class CsvToJsonConverterTests
             Rows =
             [
                 ["Engineering", "Alice", "90000"],
-                ["Marketing",   "Bob",   "70000"],
+                ["Marketing", "Bob", "70000"],
                 ["Engineering", "Carol", "85000"]
             ]
         };
