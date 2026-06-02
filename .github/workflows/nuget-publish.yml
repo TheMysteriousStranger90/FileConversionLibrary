@@ -1,0 +1,86 @@
+name: Publish to NuGet
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.8.0)'
+        required: true
+        type: string
+
+jobs:
+  publish:
+    name: Build and Publish to NuGet
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            VERSION="${VERSION#v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Publishing version: $VERSION"
+
+      - name: Update project version
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          sed -i "s|<Version>.*</Version>|<Version>$VERSION</Version>|" src/FileConversionLibrary/FileConversionLibrary.csproj
+          sed -i "s|<AssemblyVersion>.*</AssemblyVersion>|<AssemblyVersion>$VERSION.0</AssemblyVersion>|" src/FileConversionLibrary/FileConversionLibrary.csproj
+          sed -i "s|<FileVersion>.*</FileVersion>|<FileVersion>$VERSION.0</FileVersion>|" src/FileConversionLibrary/FileConversionLibrary.csproj
+          echo "Updated version to $VERSION"
+
+      - name: Restore dependencies
+        run: dotnet restore FileConversionLibrary.sln
+
+      - name: Build (Release)
+        run: dotnet build FileConversionLibrary.sln -c Release --no-restore
+
+      - name: Run tests
+        run: dotnet test FileConversionLibrary.sln -c Release --no-build --verbosity normal
+
+      - name: Pack NuGet package
+        run: dotnet pack src/FileConversionLibrary/FileConversionLibrary.csproj -c Release --no-build -o ./artifacts
+
+      - name: Publish to NuGet.org
+        run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Upload NuGet package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-package-${{ steps.get_version.outputs.version }}
+          path: ./artifacts/*.nupkg
+          retention-days: 90
+
+      - name: Create release summary
+        run: |
+          echo "### NuGet Package Published :package:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Package:** FileConversionLibrary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **NuGet:** https://www.nuget.org/packages/FileConversionLibrary/${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### Installation" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "dotnet add package FileConversionLibrary --version ${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
