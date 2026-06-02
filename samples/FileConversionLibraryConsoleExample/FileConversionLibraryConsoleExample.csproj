@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <!-- CS0618: XmlData.Headers/Rows are [Obsolete] but needed for table-based in-memory conversions -->
+    <NoWarn>$(NoWarn);CS0618;CA1861</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FileConversionLibrary\FileConversionLibrary.csproj"/>
+  </ItemGroup>
+
+</Project>

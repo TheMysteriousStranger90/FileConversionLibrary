@@ -1,0 +1,57 @@
+name: CodeQL Security Scan
+
+on:
+  push:
+    branches: [ develop, master ]
+  pull_request:
+    branches: [ develop, master ]
+  schedule:
+    # Run weekly on Monday at 03:00 UTC
+    - cron: '0 3 * * 1'
+
+jobs:
+  analyze:
+    name: Analyze (C#)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+          queries: security-and-quality
+
+      - name: Restore dependencies
+        run: dotnet restore FileConversionLibrary.sln
+
+      - name: Build for CodeQL analysis
+        run: dotnet build FileConversionLibrary.sln -c Release --no-restore
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:csharp"
+
+      - name: Security scan summary
+        if: always()
+        run: |
+          echo "### Security Scan Summary :shield:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Language:** C#" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Scan Date:** $(date -u +''%Y-%m-%d %H:%M UTC'')" >> $GITHUB_STEP_SUMMARY

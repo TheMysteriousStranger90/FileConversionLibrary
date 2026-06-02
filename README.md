@@ -2,23 +2,26 @@
 
 ![File Conversion Library Showcase](Screenshots/Screen1.png)
 
-A .NET library for converting CSV and XML files to various formats including XML, PDF, Word, JSON, and YAML. Now with enhanced Stream API and In-Memory conversion capabilities!
+A .NET library for converting CSV and XML files to various formats including XML, PDF, Word, JSON, and YAML. Now with
+enhanced Stream API and In-Memory conversion capabilities!
 
 ## Key Features
 
--   **Unified API**: A consistent and predictable API across file, stream, and in-memory conversions using strongly-typed options classes.
--   **Robust Parsing**: Advanced heuristics to reliably parse complex and real-world CSV and XML files.
--   **Multiple Conversion Modes**:
-    -   **File-Based**: Convert files directly from disk.
-    -   **Stream-Based**: For web applications, microservices, and data pipelines.
-    -   **In-Memory**: High-performance, low-overhead conversions on data objects.
--   **Extensive Customization**: Fine-tune every aspect of the output with detailed, format-specific options.
+- **Unified API**: A consistent and predictable API across file, stream, and in-memory conversions using strongly-typed
+  options classes.
+- **Robust Parsing**: Advanced heuristics to reliably parse complex and real-world CSV and XML files.
+- **Multiple Conversion Modes**:
+    - **File-Based**: Convert files directly from disk.
+    - **Stream-Based**: For web applications, microservices, and data pipelines.
+    - **In-Memory**: High-performance, low-overhead conversions on data objects.
+- **Extensive Customization**: Fine-tune every aspect of the output with detailed, format-specific options.
 
 ## Usage
 
 ### 1. File-Based Conversion
 
-The most straightforward way to use the library. All methods now accept a dedicated options class for easy configuration.
+The most straightforward way to use the library. All methods now accept a dedicated options class for easy
+configuration.
 
 ```csharp
 // Create a single instance of the converter
@@ -94,8 +97,8 @@ File.WriteAllBytes("in_memory_report.docx", wordBytes);
 
 The library supports two ways to provide in-memory XML data:
 
--   **For Table-Based Formats (CSV, PDF, Word):** Provide pre-parsed `Headers` and `Rows`.
--   **For Tree-Based Formats (JSON, YAML):** Provide the full `XDocument`.
+- **For Table-Based Formats (CSV, PDF, Word):** Provide pre-parsed `Headers` and `Rows`.
+- **For Tree-Based Formats (JSON, YAML):** Provide the full `XDocument`.
 
 ```csharp
 // --- For Table-Based output (e.g., PDF) ---
@@ -122,12 +125,12 @@ var json = fileConverter.ConvertXmlToJson(xmlDataForTree, new JsonConversionOpti
 
 Customize your output by passing an options object to any conversion method.
 
--   **`JsonConversionOptions`**: Control indentation, data type conversion, object nesting, and more.
--   **`PdfConversionOptions`**: Set titles, font sizes, page orientation, and row styling.
--   **`WordConversionOptions`**: Generate a table or hierarchical text, set fonts, and style rows.
--   **`XmlConversionOptions`**: Define output structure (elements vs. attributes), naming conventions, and metadata.
--   **`YamlConversionOptions`**: Choose data structure, naming conventions, and data type handling.
--   **`CsvConversionOptions`**: Specify delimiters, quoting behavior, and attribute handling for XML sources.
+- **`JsonConversionOptions`**: Control indentation, data type conversion, object nesting, and more.
+- **`PdfConversionOptions`**: Set titles, font sizes, page orientation, and row styling.
+- **`WordConversionOptions`**: Generate a table or hierarchical text, set fonts, and style rows.
+- **`XmlConversionOptions`**: Define output structure (elements vs. attributes), naming conventions, and metadata.
+- **`YamlConversionOptions`**: Choose data structure, naming conventions, and data type handling.
+- **`CsvConversionOptions`**: Specify delimiters, quoting behavior, and attribute handling for XML sources.
 
 ## Contributing
 

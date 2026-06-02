@@ -1,0 +1,45 @@
+# Auto detect text files and perform LF normalization
+* text=auto eol=crlf
+
+# Source files
+*.cs     text eol=crlf diff=csharp
+*.vb     text eol=crlf
+*.csproj text eol=crlf
+*.sln    text eol=crlf
+*.props  text eol=crlf
+*.targets text eol=crlf
+*.config text eol=crlf
+*.json   text eol=crlf
+*.xml    text eol=crlf
+*.yaml   text eol=crlf
+*.yml    text eol=crlf
+*.md     text eol=crlf
+*.txt    text eol=crlf
+*.csv    text eol=crlf
+*.editorconfig text eol=crlf
+*.gitattributes text eol=crlf
+*.gitignore text eol=crlf
+
+# Shell scripts - keep LF
+*.sh     text eol=lf
+*.bash   text eol=lf
+
+# Binary files
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.ico    binary
+*.pdf    binary
+*.docx   binary
+*.doc    binary
+*.xls    binary
+*.xlsx   binary
+*.zip    binary
+*.7z     binary
+*.gz     binary
+*.nupkg  binary
+*.snupkg binary
+*.dll    binary
+*.exe    binary
+*.pdb    binary
