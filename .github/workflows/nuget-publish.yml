@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -65,12 +65,35 @@ jobs:
       - name: Publish to NuGet.org
         run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
+      - name: Add GitHub Packages source
+        run: |
+          dotnet nuget add source \
+            --username ${{ github.actor }} \
+            --password ${{ secrets.GITHUB_TOKEN }} \
+            --store-password-in-clear-text \
+            --name github \
+            "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+      - name: Publish to GitHub Packages
+        run: dotnet nuget push ./artifacts/*.nupkg --source github --skip-duplicate
+
       - name: Upload NuGet package artifact
         uses: actions/upload-artifact@v4
         with:
           name: nuget-package-${{ steps.get_version.outputs.version }}
           path: ./artifacts/*.nupkg
           retention-days: 90
+
+      - name: Upload .nupkg to Release Assets
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./artifacts/FileConversionLibrary.${{ steps.get_version.outputs.version }}.nupkg
+          asset_name: FileConversionLibrary.${{ steps.get_version.outputs.version }}.nupkg
+          asset_content_type: application/octet-stream
 
       - name: Create release summary
         run: |
@@ -79,6 +102,7 @@ jobs:
           echo "- **Package:** FileConversionLibrary" >> $GITHUB_STEP_SUMMARY
           echo "- **Version:** ${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "- **NuGet:** https://www.nuget.org/packages/FileConversionLibrary/${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **GitHub Packages:** https://github.com/${{ github.repository_owner }}/FileConversionLibrary/pkgs/nuget/FileConversionLibrary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "#### Installation" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
