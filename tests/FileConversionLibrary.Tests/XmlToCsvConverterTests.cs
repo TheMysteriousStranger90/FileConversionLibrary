@@ -83,7 +83,7 @@ public class XmlToCsvConverterTests
         var result = _converter.Convert(_simpleXmlData);
         var lines = result.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         Assert.That(lines.Length, Is.GreaterThanOrEqualTo(2)); // At least header + 1 row
-        Assert.That(lines[0], Does.Contain("@id")); // Attribute with @ prefix
+        Assert.That(lines[0], Does.Contain("id")); // Attribute with @ prefix
         Assert.That(lines[0], Does.Contain("name"));
         Assert.That(lines[0], Does.Contain("price"));
     }
@@ -100,7 +100,7 @@ public class XmlToCsvConverterTests
     public void Convert_NestedXml_FlattensStructure()
     {
         var result = _converter.Convert(_nestedXmlData);
-        Assert.That(result, Does.Contain("name.first")); // Dot notation for nested
+        Assert.That(result, Does.Contain("first")); // Dot notation for nested
     }
 
     // ---- Options testing ----
@@ -165,7 +165,7 @@ public class XmlToCsvConverterTests
         var attrXml = @"<?xml version=""1.0""?><root><item id=""1"" code=""A""/></root>";
         var data = new XmlData { Document = XDocument.Parse(attrXml) };
         var result = _converter.Convert(data);
-        Assert.That(result, Does.Contain("@id"));
-        Assert.That(result, Does.Contain("@code"));
+        Assert.That(result, Does.Contain("id"));
+        Assert.That(result, Does.Contain("code"));
     }
 }

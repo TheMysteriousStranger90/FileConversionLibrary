@@ -300,18 +300,48 @@ public class XmlToCsvConverter : IConverter<XmlData, string>
         ParseOptions(options, ref delimiter, ref quoteValues, ref includeHeaders,
             ref flattenHierarchy, ref customNullValue);
 
+        var rootName = input.Document?.Root?.Name.LocalName ?? string.Empty;
+        var rootAttrs = input.Document?.Root?.Attributes().ToList() ??
+                        new System.Collections.Generic.List<System.Xml.Linq.XAttribute>();
+
+        var baseHeaders =
+            System.Linq.Enumerable.ToList(System.Linq.Enumerable.Select(input.Headers, NormalizeTabularHeader));
+
+        var finalHeaders = new System.Collections.Generic.List<string>();
+        foreach (var attr in rootAttrs)
+        {
+            if (!string.IsNullOrEmpty(rootName))
+                finalHeaders.Add($"{rootName}_{attr.Name.LocalName}");
+            else
+                finalHeaders.Add(attr.Name.LocalName);
+        }
+
+        finalHeaders.AddRange(baseHeaders);
+
         var sb = new StringBuilder();
 
         if (includeHeaders)
         {
             var headerLine = string.Join(delimiter.ToString(),
-                input.Headers.Select(h => quoteValues ? QuoteValue(h, delimiter) : h));
+                System.Linq.Enumerable.Select(finalHeaders, h => quoteValues ? QuoteValue(h, delimiter) : h));
             sb.AppendLine(headerLine);
         }
 
         foreach (var row in input.Rows)
         {
-            var values = new string[input.Headers.Length];
+            var values = new string[finalHeaders.Count];
+            var vIdx = 0;
+
+            foreach (var attr in rootAttrs)
+            {
+                var val = attr.Value ?? string.Empty;
+                if (string.IsNullOrEmpty(val) && customNullValue != null)
+                {
+                    val = customNullValue;
+                }
+
+                values[vIdx++] = quoteValues ? QuoteValue(val, delimiter) : val;
+            }
 
             for (int i = 0; i < input.Headers.Length; i++)
             {
@@ -329,13 +359,25 @@ public class XmlToCsvConverter : IConverter<XmlData, string>
                     cellValue = customNullValue ?? string.Empty;
                 }
 
-                values[i] = quoteValues ? QuoteValue(cellValue, delimiter) : cellValue;
+                values[vIdx++] = quoteValues ? QuoteValue(cellValue, delimiter) : cellValue;
             }
 
             sb.AppendLine(string.Join(delimiter.ToString(), values));
         }
 
         return sb.ToString();
+    }
+
+    private static string NormalizeTabularHeader(string header)
+    {
+        if (header.StartsWith("attr_", StringComparison.Ordinal))
+            return header[5..];
+
+        var attrIdx = header.IndexOf("_attr_", StringComparison.Ordinal);
+        if (attrIdx >= 0)
+            return string.Concat(header.AsSpan(0, attrIdx), "_", header.AsSpan(attrIdx + 6));
+
+        return header;
     }
 
     private static void ParseOptions(object? options, ref char delimiter, ref bool quoteValues,

@@ -82,7 +82,7 @@ sealed class Program
         Console.WriteLine("\n┌─────────────────────────────────────────┐");
         Console.WriteLine("│           Select Demo Type              │");
         Console.WriteLine("├─────────────────────────────────────────┤");
-        Console.WriteLine("│  1. File-to-File Conversions           │");
+        Console.WriteLine("│  1. File-to-File Conversions            │");
         Console.WriteLine("│  2. Stream-based Conversions            │");
         Console.WriteLine("│  3. In-Memory Conversions               │");
         Console.WriteLine("│  4. Advanced Options Examples           │");
