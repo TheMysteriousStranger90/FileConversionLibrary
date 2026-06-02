@@ -30,12 +30,12 @@ jobs:
 
       - name: Run unit tests
         run: |
-          dotnet test FileConversionLibrary.sln `
-            -c Release `
-            --no-build `
-            --logger "trx;LogFileName=test-results.trx" `
-            --results-directory ./TestResults `
-            --collect:"XPlat Code Coverage" `
+          dotnet test FileConversionLibrary.sln \
+            -c Release \
+            --no-build \
+            --logger "trx;LogFileName=test-results.trx" \
+            --results-directory ./TestResults \
+            --collect:"XPlat Code Coverage" \
             -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
       - name: Upload test results
